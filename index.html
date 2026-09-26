@@ -2937,16 +2937,23 @@ button,input,select,textarea{touch-action:manipulation;}
             }
         }
 
-        // New Bill / Waiting Bill shortcut:
-        // 1st press -> New Bill, 2nd press -> another New Bill,
-        // 3rd press (when an earlier bill is waiting) -> Waiting Bills popup.
-        // Shift+2 is supported alongside F2.
-        const isNewBillShortcut = key === 'F2' ||
-            (e.shiftKey && (e.code === 'Digit2' || e.keyCode === 50));
+        // F2 ONLY — exact 1 → 2 → 3 sequence:
+        // 1st F2: open/create second Bill (BN-05)
+        // 2nd F2: open/create third Bill (BN-05)
+        // 3rd F2: open Waiting Bills popup
+        // Shift+2 is intentionally NOT supported.
+        const isNewBillShortcut = key === 'F2';
         if (isNewBillShortcut) {
             e.preventDefault();
             e.stopPropagation();
-            if (getWaitingBillTabs().length > 0) {
+
+            const waitingPopup = document.getElementById('modal-waiting-bills');
+            if (waitingPopup && waitingPopup.classList.contains('active')) {
+                return;
+            }
+
+            // Three open bill tabs = popup on the next F2.
+            if (Array.isArray(billTabs) && billTabs.length >= 3) {
                 openWaitingBillsPopup();
             } else {
                 createNewBillTab();

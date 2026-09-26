@@ -2953,6 +2953,16 @@ button,input,select,textarea{touch-action:manipulation;}
         }
 
         if (key === 'Escape') {
+            // M12/Main is the terminal page of the return route. When no modal
+            // is active, ESC must be a no-op; never replay an older P12/P11
+            // route through this legacy handler.
+            if (!document.querySelector('.modal.active')) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                e.__smartshopEscHandled = true;
+                return;
+            }
+
             // A P12 -> P11 return is a single, atomic ESC action. The capture-phase
             // router normally consumes this first; this guard is the safety net
             // for any older ESC listener so the same physical key event can never

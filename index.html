@@ -5450,7 +5450,19 @@ button,input,select,textarea{touch-action:manipulation;}
             activeEl?.id === 'main-bill-list' ||
             activeEl?.closest?.('#main-bill-list')
         );
-        if (fromM12) billHistoryOpenedFromM12 = true;
+        if (fromM12) {
+            billHistoryOpenedFromM12 = true;
+            // Central navigation: M12 is the exact parent control for this route.
+            const m12 = document.getElementById('main-bill-list');
+            const topTrail = pageReturnStack.length ? pageReturnStack[pageReturnStack.length - 1] : null;
+            if (m12 && (!topTrail || topTrail.childModalId !== 'modal-history')) {
+                rememberPageReturn('__main-page__', m12, {sourceId:'main-bill-list', sourceCode:'M12'}, 'modal-history');
+            } else if (topTrail && topTrail.childModalId === 'modal-history') {
+                topTrail.focusEl = m12;
+                topTrail.focusInfo = getPageReturnFocusInfo(m12);
+                topTrail.data = {...(topTrail.data || {}), sourceId:'main-bill-list', sourceCode:'M12'};
+            }
+        }
 
         // CENTRAL ROUTE MARKER: Bill History opened from M12 owns its own
         // reverse route. Generic pageReturnStack must never decide this route.
@@ -7436,7 +7448,10 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
         const main=get('main-bill-list');
         if(main){
             main.classList.remove('selected');
-            main.focus({preventScroll:true});
+            setTimeout(() => {
+                focusKeyboardControl(main);
+                main.classList.add('selected');
+            }, 40);
         }
         return true;
     }

@@ -2937,10 +2937,10 @@ button,input,select,textarea{touch-action:manipulation;}
             }
         }
 
-        // F2 ONLY — exact 1 → 2 → 3 sequence:
-        // 1st F2: open/create second Bill (BN-05)
-        // 2nd F2: open/create third Bill (BN-05)
-        // 3rd F2: open Waiting Bills popup
+        // F2 ONLY:
+        // First F2 -> create the next new Bill.
+        // Second F2 while that bill is waiting -> open Waiting Bills popup.
+        // Popup "＋ New Bill" -> create the next locked Bill number.
         // Shift+2 is intentionally NOT supported.
         const isNewBillShortcut = key === 'F2';
         if (isNewBillShortcut) {
@@ -2952,8 +2952,7 @@ button,input,select,textarea{touch-action:manipulation;}
                 return;
             }
 
-            // Three open bill tabs = popup on the next F2.
-            if (Array.isArray(billTabs) && billTabs.length >= 3) {
+            if (getWaitingBillTabs().length > 0) {
                 openWaitingBillsPopup();
             } else {
                 createNewBillTab();
@@ -3879,13 +3878,33 @@ button,input,select,textarea{touch-action:manipulation;}
         persistData();
     }
 
+    // Get the next bill number without putting an unsaved bill into Bill Book.
+    // Open/Waiting bills reserve their number only in billTabs, so the same
+    // number stays locked on that bill until Save actually writes it to savedBills.
+    function getNextLockedBillNumber() {
+        const used = new Set();
+
+        savedBills.forEach(b => {
+            const n = parseInt(String(b?.billNo || '').replace(/^#/, ''), 10);
+            if (Number.isFinite(n)) used.add(n);
+        });
+
+        billTabs.forEach(t => {
+            const n = parseInt(String(t?.billNo || '').replace(/^#/, ''), 10);
+            if (Number.isFinite(n)) used.add(n);
+        });
+
+        let n = Math.max(Number(nextBillSeq) || 101, 101);
+        while (used.has(n)) n++;
+        return n;
+    }
+
     function createNewBillTab(existingBillData = null) {
         let newBill;
         if (existingBillData) {
             newBill = existingBillData;
         } else {
-            normalizeOpenBillNumbers();
-            const billNo = "#" + nextBillSeq++; // Every newly created bill gets a fresh sequential number.
+            const billNo = "#" + getNextLockedBillNumber();
             newBill = {
                 id: 'bill_' + Date.now(),
                 billNo: billNo,
@@ -5222,8 +5241,13 @@ button,input,select,textarea{touch-action:manipulation;}
         if (existIndex !== -1) savedBills[existIndex] = record;
         else savedBills.push(record);
 
-        // Bill number is already assigned when the new bill is created.
-        // Do not increment it again here.
+        // Only now, after the bill is actually saved into Bill Book,
+        // advance the persistent next-bill sequence. The unsaved bill's
+        // number remains locked in its tab until this point.
+        const savedBillNumber = parseInt(String(record.billNo || '').replace(/^#/, ''), 10);
+        if (Number.isFinite(savedBillNumber)) {
+            nextBillSeq = Math.max(Number(nextBillSeq) || 101, savedBillNumber + 1);
+        }
 
         if (oldMobile && oldMobile !== 'N/A') {
             const oldCust = customerList.find(c => c.mobile === oldMobile);

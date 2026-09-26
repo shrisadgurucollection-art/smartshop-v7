@@ -3790,7 +3790,14 @@ button,input,select,textarea{touch-action:manipulation;}
         }
 
         if (activeTabId) {
-            switchBillTab(activeTabId);
+            // STRICT WAITING-BILL RULE:
+            // Closing/cancelling one bill must not expose P08 while any other
+            // waiting bill still exists. Route to P09 until all are cleared.
+            const billModal = document.getElementById('modal-bill');
+            if (billModal) billModal.classList.remove('active');
+            modalStack = modalStack.filter(id => id !== 'modal-bill');
+            refreshModalStack();
+            openWaitingBillsPopup();
         } else {
             hideModal('modal-bill');
             setTimeout(() => focusMainNewBill(), 50);
@@ -3981,7 +3988,16 @@ button,input,select,textarea{touch-action:manipulation;}
         billTabs = billTabs.filter(t => t.id !== tabId);
         if (activeTabId === tabId) {
             if (billTabs.length > 0) {
-                switchBillTab(billTabs[billTabs.length - 1].id);
+                // STRICT WAITING-BILL RULE:
+                // If even one unsaved/unclosed bill remains, never return to
+                // P08. The user must stay behind P09 until every waiting bill
+                // is Saved or Cancelled.
+                activeTabId = null;
+                const billModal = document.getElementById('modal-bill');
+                if (billModal) billModal.classList.remove('active');
+                modalStack = modalStack.filter(id => id !== 'modal-bill');
+                refreshModalStack();
+                openWaitingBillsPopup();
             } else {
                 hideModal('modal-bill');
                 activeTabId = null;

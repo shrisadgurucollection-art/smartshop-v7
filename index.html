@@ -5854,6 +5854,14 @@ button,input,select,textarea{touch-action:manipulation;}
             refreshModalStack();
         }
 
+        // P12 has been consumed. Remove its route entry before reopening
+        // IM-02; otherwise the next ESC from IM-02 can fall through to an
+        // obsolete P12 trail instead of returning to IM-01.
+        pageReturnStack = pageReturnStack.filter(t =>
+            t.modalId !== 'modal-bill-detail' &&
+            t.childModalId !== 'modal-bill-detail'
+        );
+
         if (!ctx || !ctx.itemId) return false;
 
         itemHistorySelectedItemId = String(ctx.itemId);
@@ -7439,9 +7447,8 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
        * selected bill/item information that a generic close must preserve.
        */
       if(m.id==='modal-bill-detail'){
-        // These contexts are top-level lexical variables in index.html,
-        // not window properties. Use the actual route state so P12 can
-        // return to the exact P11/Item-History parent.
+        // Central route priority: P12 must return to the page that opened it.
+        // These contexts are lexical variables in the main script.
         if(typeof billHistoryReturnContext !== 'undefined' &&
            billHistoryReturnContext &&
            typeof window.returnFromBillDetailToHistory==='function'){
@@ -7452,6 +7459,21 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
            typeof window.returnFromBillDetailToItemHistory==='function'){
           return !!window.returnFromBillDetailToItemHistory();
         }
+      }
+
+      // Item Master route: IM-02 -> IM-01 is handled by the exact-row
+      // close function. This must happen before generic hideModal().
+      if(m.id==='modal-item-history' &&
+         typeof window.closeItemHistoryPopup==='function'){
+        return !!window.closeItemHistoryPopup();
+      }
+
+      // Item Master root route. If opened from Main, closeItemMasterModal()
+      // returns through the central trail to the exact Main control. If it
+      // was opened from a Bill, the function restores the exact Bill row.
+      if(m.id==='modal-saved-items' &&
+         typeof window.closeItemMasterModal==='function'){
+        return !!window.closeItemMasterModal();
       }
 
       // Explicit Bill History route: after P12 -> P11, the next ESC is

@@ -5865,7 +5865,26 @@ button,input,select,textarea{touch-action:manipulation;}
         if (!ctx || !ctx.itemId) return false;
 
         itemHistorySelectedItemId = String(ctx.itemId);
-        openItemHistoryForItem(ctx.itemId);
+
+        // IM-02 is normally still open underneath P12. Do NOT call
+        // openItemHistoryForItem() again in that case, because showModal()
+        // would add IM-02 a second time to the modal/return stack. That caused
+        // ESC to close one IM-02 and immediately reveal another identical IM-02.
+        const itemHistoryModal = document.getElementById('modal-item-history');
+        const itemHistoryAlreadyOpen = !!itemHistoryModal?.classList.contains('active');
+
+        if (!itemHistoryAlreadyOpen) {
+            openItemHistoryForItem(ctx.itemId);
+        } else {
+            // Rebuild the existing IM-02 content without opening another modal.
+            const item = masterItems.find(x => String(x.id) === String(ctx.itemId));
+            const list = document.getElementById('item-history-list');
+            if (item && list) {
+                list.querySelectorAll('.item-history-row').forEach(r => {
+                    r.classList.remove('selected');
+                });
+            }
+        }
 
         setTimeout(() => {
             const rows = Array.from(document.querySelectorAll('#modal-item-history .item-history-row'));

@@ -2952,7 +2952,10 @@ button,input,select,textarea{touch-action:manipulation;}
                 return;
             }
 
-            if (getWaitingBillTabs().length > 0) {
+            // The second F2 must open the Waiting Bills popup even when
+            // the first waiting bill is still blank. Do NOT depend on item
+            // quantity/total to decide whether a bill is waiting.
+            if (Array.isArray(billTabs) && billTabs.length >= 2) {
                 openWaitingBillsPopup();
             } else {
                 createNewBillTab();

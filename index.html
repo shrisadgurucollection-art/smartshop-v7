@@ -7404,6 +7404,199 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
 })();
 </script>
 
+<script id="smartshop-item-history-route-reference">
+/*
+ * ITEM MASTER / ITEM HISTORY ROUTE
+ * Copied from the supplied reference file.
+ *
+ * Main -> IM-01 Item Master -> IM-02 Item History -> P12 Bill Detail
+ * -> Modify -> Save -> P12
+ *
+ * Reverse:
+ * P12 --ESC--> IM-02 (same bill row)
+ * IM-02 --ESC--> IM-01 (same item row)
+ * IM-01 --ESC--> Main (same main cursor)
+ *
+ * One physical ESC = one transition.
+ */
+(function(){
+  'use strict';
+
+  const IDS = {
+    MAIN:'main-bill-list',
+    ITEM_MASTER:'modal-saved-items',
+    ITEM_HISTORY:'modal-item-history',
+    DETAIL:'modal-bill-detail',
+    EDIT:'modal-bill',
+    PAYMENT:'modal-payment-popup'
+  };
+
+  const get = id => document.getElementById(id);
+  const isActive = id => !!get(id)?.classList.contains('active');
+
+  function clearItemRouteTrail(){
+    const routeIds=[IDS.ITEM_MASTER,IDS.ITEM_HISTORY,IDS.DETAIL,IDS.EDIT,IDS.PAYMENT];
+    if(Array.isArray(window.modalStack)){
+      window.modalStack=window.modalStack.filter(id=>!routeIds.includes(id));
+    }
+    if(Array.isArray(window.pageReturnStack)){
+      window.pageReturnStack=window.pageReturnStack.filter(t=>
+        !routeIds.includes(t.modalId) && !routeIds.includes(t.childModalId)
+      );
+    }
+    if(typeof refreshModalStack==='function') refreshModalStack();
+  }
+
+  function closeDirect(id){
+    const m=get(id);
+    if(m) m.classList.remove('active');
+    if(Array.isArray(window.modalStack)){
+      window.modalStack=window.modalStack.filter(x=>x!==id);
+    }
+  }
+
+  function focusItemMasterRow(itemId){
+    const master=get(IDS.ITEM_MASTER);
+    if(!master) return;
+    const rows=Array.from(master.querySelectorAll('#master-items-tbody tr[data-item-id]'));
+    const row=rows.find(r=>String(r.dataset.itemId||'')===String(itemId||''));
+    if(row){
+      rows.forEach(r=>r.classList.remove('selected'));
+      row.classList.add('selected');
+      row.setAttribute('tabindex','0');
+      if(typeof focusKeyboardControl==='function') focusKeyboardControl(row);
+      else row.focus({preventScroll:true});
+      row.scrollIntoView({block:'nearest'});
+    }else{
+      get('master-item-search')?.focus({preventScroll:true});
+    }
+  }
+
+  function focusItemHistoryBill(historyIdx){
+    const history=get(IDS.ITEM_HISTORY);
+    if(!history) return;
+    const rows=Array.from(history.querySelectorAll('.item-history-row'));
+    const row=rows.find(r=>Number(r.dataset.historyIdx)===Number(historyIdx));
+    if(row){
+      rows.forEach(r=>r.classList.remove('selected'));
+      row.classList.add('selected');
+      if(typeof focusKeyboardControl==='function') focusKeyboardControl(row);
+      else row.focus({preventScroll:true});
+      row.scrollIntoView({block:'nearest'});
+    }else if(rows[0]){
+      rows[0].classList.add('selected');
+      if(typeof focusKeyboardControl==='function') focusKeyboardControl(rows[0]);
+      else rows[0].focus({preventScroll:true});
+    }
+  }
+
+  function p12ToP03(){
+    const detail=get(IDS.DETAIL);
+    const ctx=typeof itemHistoryBillContext!=='undefined' && itemHistoryBillContext
+      ? {...itemHistoryBillContext}:null;
+    if(!detail || !ctx?.itemId) return false;
+
+    closeDirect(IDS.DETAIL);
+    closeDirect(IDS.EDIT);
+    closeDirect(IDS.PAYMENT);
+
+    billHistoryReturnContext=null;
+    billEditReturnToDetail=null;
+    itemHistorySelectedItemId=String(ctx.itemId);
+    itemHistoryBillContext={...ctx};
+
+    clearItemRouteTrail();
+
+    openItemHistoryForItem(ctx.itemId);
+
+    const history=get(IDS.ITEM_HISTORY);
+    if(history){
+      history.dataset.route='item-history';
+      history.dataset.returnToItemMaster='1';
+      history.dataset.returnToMain=window.smartshopItemMasterRouteFromMain?'1':'0';
+    }
+
+    setTimeout(()=>focusItemHistoryBill(ctx.historyIdx),140);
+    return true;
+  }
+
+  function p03ToP02(){
+    const history=get(IDS.ITEM_HISTORY);
+    const itemId=String(
+      (typeof itemHistorySelectedItemId!=='undefined' && itemHistorySelectedItemId) ||
+      (typeof itemHistoryBillContext!=='undefined' && itemHistoryBillContext?.itemId) || ''
+    );
+    if(!history || !itemId) return false;
+
+    closeDirect(IDS.ITEM_HISTORY);
+    closeDirect(IDS.DETAIL);
+    closeDirect(IDS.EDIT);
+    closeDirect(IDS.PAYMENT);
+
+    clearItemRouteTrail();
+
+    const master=get(IDS.ITEM_MASTER);
+    if(!master) return false;
+
+    renderMasterItemsTable();
+    master.classList.add('active');
+    master.dataset.route='item-master-main';
+    master.dataset.returnToMain=window.smartshopItemMasterRouteFromMain?'1':'0';
+
+    if(Array.isArray(window.modalStack)){
+      window.modalStack=window.modalStack.filter(x=>x!==IDS.ITEM_MASTER);
+      window.modalStack.push(IDS.ITEM_MASTER);
+    }
+    if(typeof refreshModalStack==='function') refreshModalStack();
+
+    setTimeout(()=>focusItemMasterRow(itemId),120);
+    return true;
+  }
+
+  function p02ToMain(){
+    const master=get(IDS.ITEM_MASTER);
+    if(!master) return false;
+
+    closeDirect(IDS.ITEM_MASTER);
+    clearItemRouteTrail();
+
+    master.dataset.route='';
+    master.dataset.returnToMain='0';
+    window.smartshopItemMasterRouteFromMain=false;
+
+    itemHistorySelectedItemId=null;
+    itemHistoryReturnElement=null;
+    itemHistoryBillContext=null;
+    billHistoryReturnContext=null;
+    billEditReturnToDetail=null;
+
+    const main=get(IDS.MAIN);
+    if(main){
+      main.classList.add('selected');
+      main.focus({preventScroll:true});
+    }
+
+    setTimeout(()=>{
+      const em13=
+        document.querySelector('[data-main-code="EM13"]') ||
+        document.querySelector('[data-page-code="EM13"]') ||
+        document.querySelector('[data-code="EM13"]') ||
+        document.getElementById('EM13');
+      if(em13){
+        if(em13.tabIndex<0) em13.tabIndex=0;
+        em13.focus({preventScroll:true});
+        em13.classList.add('selected');
+      }
+    },80);
+    return true;
+  }
+
+  window.smartshopItemHistoryEscP12ToP03=p12ToP03;
+  window.smartshopItemHistoryEscP03ToP02=p03ToP02;
+  window.smartshopItemHistoryEscP02ToMain=p02ToMain;
+})();
+</script>
+
 <script id="smartshop-central-navigation-v2">
 /*
  * SMARTSHOP CENTRAL NAVIGATION V2
@@ -7466,30 +7659,43 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
        * selected bill/item information that a generic close must preserve.
        */
       if(m.id==='modal-bill-detail'){
-        // Central route priority: P12 must return to the page that opened it.
-        // These contexts are lexical variables in the main script.
+        // Bill History keeps its existing working route.
         if(typeof billHistoryReturnContext !== 'undefined' &&
            billHistoryReturnContext &&
            typeof window.returnFromBillDetailToHistory==='function'){
           return !!window.returnFromBillDetailToHistory();
         }
+
+        // Item Master / Item History uses the supplied reference route.
         if(typeof itemHistoryBillContext !== 'undefined' &&
            itemHistoryBillContext &&
-           typeof window.returnFromBillDetailToItemHistory==='function'){
-          return !!window.returnFromBillDetailToItemHistory();
+           typeof window.smartshopItemHistoryEscP12ToP03==='function'){
+          return !!window.smartshopItemHistoryEscP12ToP03();
         }
       }
 
-      // Item Master route: IM-02 -> IM-01 is handled by the exact-row
-      // close function. This must happen before generic hideModal().
+      // Exact reference route: IM-02 -> IM-01.
+      if(m.id==='modal-item-history' &&
+         typeof window.smartshopItemHistoryEscP03ToP02==='function' &&
+         document.getElementById('modal-item-history')?.dataset.route==='item-history'){
+        return !!window.smartshopItemHistoryEscP03ToP02();
+      }
+
+      // Exact reference route: IM-01 -> Main only when Item Master originated
+      // from Main. Bill-origin Item Master keeps its existing Bill-row handler.
+      if(m.id==='modal-saved-items' &&
+         document.getElementById('modal-saved-items')?.dataset.route==='item-master-main' &&
+         document.getElementById('modal-saved-items')?.dataset.returnToMain==='1' &&
+         typeof window.smartshopItemHistoryEscP02ToMain==='function'){
+        return !!window.smartshopItemHistoryEscP02ToMain();
+      }
+
+      // Bill-origin Item Master remains on its existing exact Bill-row route.
       if(m.id==='modal-item-history' &&
          typeof window.closeItemHistoryPopup==='function'){
         return !!window.closeItemHistoryPopup();
       }
 
-      // Item Master root route. If opened from Main, closeItemMasterModal()
-      // returns through the central trail to the exact Main control. If it
-      // was opened from a Bill, the function restores the exact Bill row.
       if(m.id==='modal-saved-items' &&
          typeof window.closeItemMasterModal==='function'){
         return !!window.closeItemMasterModal();

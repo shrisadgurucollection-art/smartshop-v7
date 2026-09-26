@@ -7600,6 +7600,12 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
     );
     if(!history || !itemId) return false;
 
+    // Preserve whether this Item History was opened from the active New Bill
+    // (P08). Without this context P02 is incorrectly treated as Main-origin.
+    const returnToNewBill = !!activeTabId &&
+      (typeof itemMasterOriginBillRowIndex !== 'undefined') &&
+      itemMasterOriginBillRowIndex !== null;
+
     closeDirect(IDS.ITEM_HISTORY);
     closeDirect(IDS.DETAIL);
     closeDirect(IDS.EDIT);
@@ -7612,8 +7618,10 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
 
     renderMasterItemsTable();
     master.classList.add('active');
-    master.dataset.route='item-master-main';
-    master.dataset.returnToMain=window.smartshopItemMasterRouteFromMain?'1':'0';
+    master.dataset.route=returnToNewBill ? 'bill-item-master' : 'item-master-main';
+    master.dataset.returnToBill=returnToNewBill ? '1' : '0';
+    master.dataset.returnToMain=returnToNewBill ? '0' :
+      (window.smartshopItemMasterRouteFromMain?'1':'0');
 
     if(Array.isArray(window.modalStack)){
       window.modalStack=window.modalStack.filter(x=>x!==IDS.ITEM_MASTER);

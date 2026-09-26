@@ -5792,6 +5792,18 @@ button,input,select,textarea{touch-action:manipulation;}
             !['modal-bill','modal-payment-popup'].includes(t.childModalId)
         );
 
+        // P22 is now consumed. Explicitly close its DOM state and remove
+        // its modal-stack entry; otherwise P12 -> ESC can expose the old P22
+        // again instead of returning to P11.
+        ['modal-bill','modal-payment-popup'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active');
+        });
+        modalStack = modalStack.filter(id =>
+            !['modal-bill','modal-payment-popup'].includes(id)
+        );
+        refreshModalStack();
+
         const tabId = activeTabId;
         if (tabId) {
             billTabs = billTabs.filter(t => t.id !== tabId);

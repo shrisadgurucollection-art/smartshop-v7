@@ -7449,7 +7449,7 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
     }
     function editedBillBack(){
         if(active('modal-bill') &&
-           window.billEditReturnToDetail &&
+           billEditReturnToDetail &&
            typeof returnFromEditedBillToDetail==='function'){
             return !!returnFromEditedBillToDetail();
         }
@@ -7457,11 +7457,11 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
     }
     function detailBackByContext(){
         if(!active('modal-bill-detail')) return false;
-        if(window.billHistoryReturnContext &&
+        if(billHistoryReturnContext &&
            typeof returnFromBillDetailToHistory==='function'){
             return !!returnFromBillDetailToHistory();
         }
-        if(window.itemHistoryBillContext &&
+        if(itemHistoryBillContext &&
            typeof returnFromBillDetailToItemHistory==='function'){
             return !!returnFromBillDetailToItemHistory();
         }
@@ -7469,14 +7469,14 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
     }
     function historyBackToMain(){
         if(!active('modal-history')) return false;
-        if(!(window.billHistoryReturnToM12Only || window.billHistoryOpenedFromM12)) return false;
+        if(!(billHistoryReturnToM12Only || billHistoryOpenedFromM12)) return false;
         const history=get('modal-history');
         if(history) history.classList.remove('active');
         if(Array.isArray(window.modalStack)){
             window.modalStack=window.modalStack.filter(id=>id!=='modal-history');
         }
-        window.billHistoryReturnToM12Only=false;
-        window.billHistoryOpenedFromM12=false;
+        billHistoryReturnToM12Only=false;
+        billHistoryOpenedFromM12=false;
         if(typeof refreshModalStack==='function') refreshModalStack();
         const main=get('main-bill-list');
         if(main){
@@ -7638,20 +7638,20 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
   function routeFor(id){
     const m=get(id), d=m?.dataset||{};
     if(id==='modal-bill-detail'){
-      if(d.route==='item-history-detail'||d.returnToItemHistory==='1'||window.itemHistoryBillContext)
+      if(d.route==='item-history-detail'||d.returnToItemHistory==='1'||itemHistoryBillContext)
         return {base:'IM',n:3,name:'Bill Details'};
-      if(d.route==='bill-history-detail'||d.returnToBillHistory==='1'||window.billHistoryReturnContext)
+      if(d.route==='bill-history-detail'||d.returnToBillHistory==='1'||billHistoryReturnContext)
         return {base:'BH',n:2,name:'Bill Details'};
       return {base:'BN',n:4,name:'Bill Details'};
     }
     if(id==='modal-bill'){
-      if(window.itemHistoryBillContext) return {base:'IM',n:6,name:'Modify Bill'};
-      if(window.billHistoryReturnContext||window.billEditReturnToDetail) return {base:'BH',n:3,name:'Modify Bill'};
+      if(itemHistoryBillContext) return {base:'IM',n:6,name:'Modify Bill'};
+      if(billHistoryReturnContext||billEditReturnToDetail) return {base:'BH',n:3,name:'Modify Bill'};
       return {base:'BN',n:5,name:'Modify Bill'};
     }
     if(id==='modal-payment-popup'){
-      if(window.itemHistoryBillContext) return {base:'IM',n:7,name:'Bill Save / Payment Popup'};
-      if(window.billHistoryReturnContext||window.billEditReturnToDetail) return {base:'BH',n:4,name:'Bill Save / Payment Popup'};
+      if(itemHistoryBillContext) return {base:'IM',n:7,name:'Bill Save / Payment Popup'};
+      if(billHistoryReturnContext||billEditReturnToDetail) return {base:'BH',n:4,name:'Bill Save / Payment Popup'};
       return {base:'BN',n:6,name:'Bill Save Popup'};
     }
     if(id==='modal-saved-items'){

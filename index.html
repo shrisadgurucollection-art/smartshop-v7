@@ -5273,11 +5273,35 @@ button,input,select,textarea{touch-action:manipulation;}
         updateDashboardAndReports();
         if (shouldPrint) triggerBillPrint(record);
 
-        // P22 -> P10 -> Save must immediately return to the exact P12.
-        // The next ESC from P12 will then return to P11 and select the same bill.
+        // Modified Bill from Bill History: open P12 exactly once.
+        // Clear stale P11/P12/edit/payment trails first so the return route
+        // cannot reopen P12 or P11 a second time.
         if (directDetailReturn) {
             const detailIdx = savedBills.findIndex(x => String(x.billNo) === String(record.billNo));
             if (detailIdx >= 0) {
+                if (directDetailReturn.returnSource === 'bill-history') {
+                    const historyModal = document.getElementById('modal-history');
+                    const detailModal = document.getElementById('modal-bill-detail');
+                    if (historyModal) historyModal.classList.remove('active');
+                    if (detailModal) detailModal.classList.remove('active');
+
+                    modalStack = modalStack.filter(id =>
+                        !['modal-history','modal-bill-detail','modal-bill','modal-payment-popup'].includes(id)
+                    );
+                    pageReturnStack = pageReturnStack.filter(t =>
+                        !['modal-history','modal-bill-detail','modal-bill','modal-payment-popup'].includes(t.modalId) &&
+                        !['modal-history','modal-bill-detail','modal-bill','modal-payment-popup'].includes(t.childModalId)
+                    );
+
+                    // Exact route: P12 -> P11 -> M12.
+                    billHistoryReturnToM12Only = false;
+                    billHistoryOpenedFromM12 = true;
+
+                    openBillDetailModal(detailIdx);
+                    return;
+                }
+
+                // Existing Item History edit route remains unchanged.
                 openBillDetailModal(detailIdx);
                 return;
             }
@@ -5830,6 +5854,16 @@ button,input,select,textarea{touch-action:manipulation;}
             t.childModalId !== 'modal-bill' &&
             t.modalId !== 'modal-payment-popup' &&
             t.childModalId !== 'modal-payment-popup'
+        );
+
+        // P12 has been consumed. Keep only one P11 instance and remove
+        // stale P12/edit/payment/main return trails.
+        pageReturnStack = pageReturnStack.filter(t =>
+            !['modal-bill-detail','modal-bill','modal-payment-popup','__main-page__'].includes(t.modalId) &&
+            !['modal-bill-detail','modal-bill','modal-payment-popup','__main-page__'].includes(t.childModalId)
+        );
+        modalStack = modalStack.filter(id =>
+            !['modal-bill-detail','modal-bill','modal-payment-popup'].includes(id)
         );
 
         // Re-render the existing Bill History list without resetting its filters.

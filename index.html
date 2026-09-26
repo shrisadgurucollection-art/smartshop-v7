@@ -3489,7 +3489,9 @@ button,input,select,textarea{touch-action:manipulation;}
     }
 
     // ===== GLOBAL PAGE-BY-PAGE RETURN TRAIL =====
-    const pageReturnStack = [];
+    let pageReturnStack = [];
+    // Central return trail shared by the entire software.
+    window.smartshopGetPageReturnStack = () => pageReturnStack;
     function getPageReturnFocusInfo(el){
         if(!el || el===document.body) return null;
         const itemRow=el.closest?.('#master-items-tbody tr[data-stock-row][data-item-id]');
@@ -3498,6 +3500,12 @@ button,input,select,textarea{touch-action:manipulation;}
         if(itemCard) return {type:'item-card', itemId:itemCard.getAttribute('data-item-id')};
         const historyRow=el.closest?.('.item-history-row[data-history-idx]');
         if(historyRow) return {type:'item-history-row', historyIdx:historyRow.getAttribute('data-history-idx')};
+        const billRow=el.closest?.('#bill-items-tbody tr');
+        if(billRow){
+            const nameInput=billRow.querySelector('input[id^="row-name-"]');
+            const match=String(nameInput?.id||'').match(/^row-name-(\\d+)$/);
+            if(match) return {type:'bill-row', rowIndex:Number(match[1])};
+        }
         return {type:'element', selector:el.id ? '#'+CSS.escape(el.id) : null};
     }
 
@@ -3524,6 +3532,9 @@ button,input,select,textarea{touch-action:manipulation;}
         }
         if(info.type==='item-history-row' && info.historyIdx!=null){
             return document.querySelector('.item-history-row[data-history-idx="'+CSS.escape(String(info.historyIdx))+'"]');
+        }
+        if(info.type==='bill-row' && info.rowIndex!=null){
+            return document.getElementById('row-name-' + String(info.rowIndex));
         }
         if(info.type==='element' && info.selector) return document.querySelector(info.selector);
         return null;
@@ -7399,520 +7410,180 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
 })();
 </script>
 
-<script id="smartshop-universal-escape-back-v4">
+<script id="smartshop-return-by-return-v1">
 /*
- * SMARTSHOP CENTRAL NAVIGATION ROUTER
+ * SMARTSHOP RETURN-BY-RETURN NAVIGATION
  *
- * Bill History is an explicit state machine:
- *   M12 -> P11 -> P12 -> P22 -> P10 -> P12 -> P11 -> M12
+ * Current Page -> selected control/item -> Child Page
+ * ESC/Back -> exactly the previous Page + the same selected control/item.
  *
- * Rule: one physical ESC = one transition.
- * P12/P11 Bill History transitions NEVER call hideModal(), restorePageReturn(),
- * or the generic pageReturnStack. Those systems are for unrelated flows.
+ * The central pageReturnStack is the source of truth. Existing explicit
+ * Bill-Edit contexts are used only where a page was intentionally replaced.
  */
 (function(){
-  const IDS = {
-    MAIN: 'main-bill-list',
-    HISTORY: 'modal-history',
-    DETAIL: 'modal-bill-detail',
-    EDIT: 'modal-bill',
-    PAYMENT: 'modal-payment-popup'
-  };
-
-  function el(id){ return document.getElementById(id); }
-  function active(id){ return !!el(id)?.classList.contains('active'); }
-
-  function consume(e){
-    if(e.__smartshopEscHandled) return false;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    e.__smartshopEscHandled = true;
-    return true;
-  }
-
-  function clearRouteTrail(){
-    if(Array.isArray(window.modalStack)){
-      window.modalStack = window.modalStack.filter(id =>
-        ![IDS.HISTORY,IDS.DETAIL,IDS.EDIT,IDS.PAYMENT].includes(id)
-      );
+    function get(id){ return document.getElementById(id); }
+    function active(id){ return !!get(id)?.classList.contains('active'); }
+    function trail(){
+        return typeof window.smartshopGetPageReturnStack === 'function'
+            ? window.smartshopGetPageReturnStack()
+            : [];
     }
-    if(Array.isArray(window.pageReturnStack)){
-      window.pageReturnStack = window.pageReturnStack.filter(t =>
-        ![IDS.HISTORY,IDS.DETAIL,IDS.EDIT,IDS.PAYMENT].includes(t.modalId) &&
-        ![IDS.HISTORY,IDS.DETAIL,IDS.EDIT,IDS.PAYMENT].includes(t.childModalId)
-      );
-    }
-    if(typeof refreshModalStack==='function') refreshModalStack();
-  }
-
-  function closeDirect(id){
-    const m=el(id);
-    if(m) m.classList.remove('active');
-    if(Array.isArray(window.modalStack))
-      window.modalStack=window.modalStack.filter(x=>x!==id);
-  }
-
-  function p12ToP11(){
-    const detail=el(IDS.DETAIL);
-    const history=el(IDS.HISTORY);
-    if(!detail || !history) return false;
-
-    const billNo = detail.dataset.billIndex != null
-      ? String(savedBills[Number(detail.dataset.billIndex)]?.billNo || '')
-      : '';
-
-    // Preserve the existing selected bill context before clearing it.
-    const ctx = billHistoryReturnContext
-      ? {...billHistoryReturnContext}
-      : (billNo ? {
-          billNo,
-          billId: String(savedBills[Number(detail.dataset.billIndex)]?.id || ''),
-          savedBillIdx: Number(detail.dataset.billIndex)
-        } : null);
-
-    // P12 is consumed. It is never allowed to re-enter the stack.
-    closeDirect(IDS.DETAIL);
-    closeDirect(IDS.EDIT);
-    closeDirect(IDS.PAYMENT);
-
-    billHistoryReturnContext = null;
-    itemHistoryBillContext = null;
-    billEditReturnToDetail = null;
-    billHistoryReturnToM12Only = true;
-    billHistoryOpenedFromM12 = true;
-
-    clearRouteTrail();
-
-    renderHistoryTable();
-    history.classList.add('active');
-    history.dataset.route='bill-history';
-    history.dataset.returnToM12='1';
-
-    if(Array.isArray(window.modalStack)){
-      window.modalStack=window.modalStack.filter(x=>x!==IDS.HISTORY);
-      window.modalStack.push(IDS.HISTORY);
-    }
-    if(typeof refreshModalStack==='function') refreshModalStack();
-
-    // Restore the exact Bill History row after the DOM is rendered.
-    setTimeout(()=>{
-      const rows=Array.from(document.querySelectorAll('#history-table-tbody tr[role="button"]'));
-      const target=rows.find(row=>{
-        const n=row.querySelector('td:first-child b')?.textContent?.trim() || '';
-        return ctx && String(n)===String(ctx.billNo);
-      });
-      if(target){
-        rows.forEach(r=>r.classList.remove('selected'));
-        target.classList.add('selected');
-        target.focus({preventScroll:true});
-        target.scrollIntoView({block:'nearest'});
-      }
-    },80);
-    return true;
-  }
-
-  function p11ToM12(){
-    const history=el(IDS.HISTORY);
-    if(!history) return false;
-
-    closeDirect(IDS.HISTORY);
-    clearRouteTrail();
-
-    history.dataset.route='';
-    history.dataset.returnToM12='0';
-    billHistoryReturnToM12Only=false;
-    billHistoryOpenedFromM12=false;
-    billHistoryReturnContext=null;
-    itemHistoryBillContext=null;
-    billEditReturnToDetail=null;
-
-    const m12=el(IDS.MAIN);
-    if(m12){
-      m12.classList.remove('selected');
-      m12.focus({preventScroll:true});
-    }
-    return true;
-  }
-
-  window.addEventListener('keydown',function(e){
-    if(e.key!=='Escape') return;
-
-    const history=el(IDS.HISTORY);
-    const detail=el(IDS.DETAIL);
-
-    // P09 Waiting Bills is a blocking workflow while any waiting bill remains.
-    // ESC must NOT dismiss P09 or return to Main until every waiting bill has
-    // been explicitly handled (Save or Cancel).
-    const waitingPopup = el('modal-waiting-bills');
-    if (waitingPopup?.classList.contains('active')) {
-      const waitingTabs = typeof getWaitingBillTabs === 'function'
-        ? getWaitingBillTabs()
-        : [];
-      if (waitingTabs.length > 0) {
-        if(!consume(e)) return;
-        renderWaitingBillsPopup();
-        updateWaitingBillsPopupSelection();
-        return;
-      }
-      if(!consume(e)) return;
-      if (typeof closeWaitingBillsPopupGuarded === 'function') {
-        closeWaitingBillsPopupGuarded();
-      } else {
-        hideModal('modal-waiting-bills');
-        setTimeout(() => {
-          if (typeof focusMainNewBill === 'function') focusMainNewBill();
-        }, 80);
-      }
-      return;
-    }
-
-    // Highest priority: Bill History route.
-    // These branches are deliberately checked before any generic popup logic.
-    if(active(IDS.DETAIL) &&
-       (detail?.dataset.route==='bill-history-detail' ||
-        detail?.dataset.returnToBillHistory==='1' ||
-        billHistoryReturnContext)){
-      if(!consume(e)) return;
-      p12ToP11();
-      return;
-    }
-
-    if(active(IDS.HISTORY) &&
-       (history?.dataset.route==='bill-history' &&
-        history?.dataset.returnToM12==='1')){
-      if(!consume(e)) return;
-      p11ToM12();
-      return;
-    }
-
-    // Item History route must be handled BEFORE generic ESC.
-    // Otherwise the generic handler closes P12/P03 and jumps directly to P02.
-    if(active(IDS.DETAIL) &&
-       (detail?.dataset.route==='item-history-detail' ||
-        detail?.dataset.returnToItemHistory==='1' ||
-        itemHistoryBillContext) &&
-       typeof window.smartshopItemHistoryEscP12ToP03 === 'function'){
-      if(!consume(e)) return;
-      window.smartshopItemHistoryEscP12ToP03();
-      return;
-    }
-
-    const itemHistory=el('modal-item-history');
-    if(active('modal-item-history') &&
-       itemHistory?.dataset.route==='item-history' &&
-       itemHistory?.dataset.returnToItemMaster==='1' &&
-       typeof window.smartshopItemHistoryEscP03ToP02 === 'function'){
-      if(!consume(e)) return;
-      window.smartshopItemHistoryEscP03ToP02();
-      return;
-    }
-
-    const itemMaster=el('modal-saved-items');
-    if(active('modal-saved-items') &&
-       itemMaster?.dataset.route==='item-master-main' &&
-       itemMaster?.dataset.returnToMain==='1' &&
-       typeof window.smartshopItemHistoryEscP02ToMain === 'function'){
-      if(!consume(e)) return;
-      window.smartshopItemHistoryEscP02ToMain();
-      return;
-    }
-
-    // Bill History -> BH-02 -> Modify -> BN-05:
-    // ESC must show the existing Bill-close confirmation. If the user chooses
-    // OK, confirmAndCloseBill() returns directly to BH-02; Cancel leaves BN-05 open.
-    // This branch is intentionally limited to the Bill History edit route so
-    // all other Bill ESC flows remain unchanged.
-    if(active(IDS.EDIT) &&
-       billEditReturnToDetail &&
-       billEditReturnToDetail.returnSource === 'bill-history'){
-      if(!consume(e)) return;
-      confirmAndCloseBill();
-      return;
-    }
-
-    // Bill -> P02 Item Master: ESC must return to the exact Bill item row.
-    // Handle this before generic modal closing so it can never reach
-    // confirmAndCloseBill() or ask whether to exit the Bill.
-    const billItemMaster = el(IDS.ITEM_MASTER);
-    if(active(billItemMaster?.id) &&
-       billItemMaster?.dataset.route === 'bill-item-master' &&
-       billItemMaster?.dataset.returnToBill === '1' &&
-       typeof closeItemMasterModal === 'function'){
-      if(!consume(e)) return;
-      closeItemMasterModal();
-      return;
-    }
-
-    // All other software pages keep the existing generic ESC behaviour.
-    if(!consume(e)) return;
-    const activeModals=Array.from(document.querySelectorAll('.modal.active'));
-    if(!activeModals.length) return;
-
-    let modal=null;
-    if(Array.isArray(window.modalStack)){
-      const stacked=window.modalStack.map(id=>el(id)).filter(x=>x?.classList.contains('active'));
-      if(stacked.length) modal=stacked[stacked.length-1];
-    }
-    modal=modal || activeModals[activeModals.length-1];
-
-    const closeBtn=modal.querySelector('.close-btn,[data-modal-close],.modal-window-btn[aria-label*="close" i]');
-    if(closeBtn){ closeBtn.click(); return; }
-    if(typeof hideModal==='function') hideModal(modal.id);
-    else modal.classList.remove('active');
-  },true);
-})();
-</script>
-<script id="smartshop-item-history-route-v1">
-/*
- * SMARTSHOP ITEM HISTORY CENTRAL ROUTER
- *
- * Exact route:
- *   Main -> P02 Item Master -> P03 Item History -> P12 Bill Detail
- *   -> P24 Modify -> P10 Save -> P12
- *
- * Reverse route after Save:
- *   P12 --ESC--> P03 (same Selected Bill)
- *   P03 --ESC--> P02 (same Selected Item)
- *   P02 --ESC--> Main (same Main cursor)
- *
- * One physical ESC = one transition.
- */
-(function(){
-    window.smartshopItemMasterRouteFromMain =
-        !!window.smartshopItemMasterRouteFromMain;
-
-    const IDS = {
-        MAIN: 'main-bill-list',
-        ITEM_MASTER: 'modal-saved-items',
-        ITEM_HISTORY: 'modal-item-history',
-        DETAIL: 'modal-bill-detail',
-        EDIT: 'modal-bill',
-        PAYMENT: 'modal-payment-popup'
-    };
-
-    const get = id => document.getElementById(id);
-    const isActive = id => !!get(id)?.classList.contains('active');
-
     function consume(e){
-        if(e.__smartshopItemRouteHandled) return false;
+        if(e.__smartshopReturnHandled) return false;
         e.preventDefault();
         e.stopImmediatePropagation();
-        e.__smartshopItemRouteHandled = true;
+        e.__smartshopReturnHandled = true;
         return true;
     }
-
-    function clearItemRouteTrail(){
-        const routeIds = [
-            IDS.ITEM_MASTER, IDS.ITEM_HISTORY, IDS.DETAIL,
-            IDS.EDIT, IDS.PAYMENT
-        ];
+    function topModalId(){
+        const stack=Array.isArray(window.modalStack) ? window.modalStack : [];
+        for(let i=stack.length-1;i>=0;i--){
+            if(active(stack[i])) return stack[i];
+        }
+        const all=Array.from(document.querySelectorAll('.modal.active'));
+        return all.length ? all[all.length-1].id : null;
+    }
+    function hasReturnEntryFor(id){
+        const s=trail();
+        return !!(s.length && s[s.length-1]?.childModalId===id);
+    }
+    function editedBillBack(){
+        if(active('modal-bill') &&
+           window.billEditReturnToDetail &&
+           typeof returnFromEditedBillToDetail==='function'){
+            return !!returnFromEditedBillToDetail();
+        }
+        return false;
+    }
+    function detailBackByContext(){
+        if(!active('modal-bill-detail')) return false;
+        if(window.billHistoryReturnContext &&
+           typeof returnFromBillDetailToHistory==='function'){
+            return !!returnFromBillDetailToHistory();
+        }
+        if(window.itemHistoryBillContext &&
+           typeof returnFromBillDetailToItemHistory==='function'){
+            return !!returnFromBillDetailToItemHistory();
+        }
+        return false;
+    }
+    function historyBackToMain(){
+        if(!active('modal-history')) return false;
+        if(!(window.billHistoryReturnToM12Only || window.billHistoryOpenedFromM12)) return false;
+        const history=get('modal-history');
+        if(history) history.classList.remove('active');
         if(Array.isArray(window.modalStack)){
-            window.modalStack = window.modalStack.filter(id => !routeIds.includes(id));
+            window.modalStack=window.modalStack.filter(id=>id!=='modal-history');
         }
-        if(Array.isArray(window.pageReturnStack)){
-            window.pageReturnStack = window.pageReturnStack.filter(t =>
-                !routeIds.includes(t.modalId) &&
-                !routeIds.includes(t.childModalId)
-            );
-        }
-        if(typeof refreshModalStack === 'function') refreshModalStack();
-    }
-
-    function closeDirect(id){
-        const m = get(id);
-        if(m) m.classList.remove('active');
-        if(Array.isArray(window.modalStack)){
-            window.modalStack = window.modalStack.filter(x => x !== id);
-        }
-    }
-
-    function focusItemMasterRow(itemId){
-        const master = get(IDS.ITEM_MASTER);
-        if(!master) return;
-        const rows = Array.from(
-            master.querySelectorAll('#master-items-tbody tr[data-item-id]')
-        );
-        const row = rows.find(r =>
-            String(r.dataset.itemId || '') === String(itemId || '')
-        );
-        if(row){
-            rows.forEach(r => r.classList.remove('selected'));
-            row.classList.add('selected');
-            row.setAttribute('tabindex','0');
-            focusKeyboardControl(row);
-            row.scrollIntoView({block:'nearest'});
-        } else {
-            get('master-item-search')?.focus({preventScroll:true});
-        }
-    }
-
-    function focusItemHistoryBill(historyIdx){
-        const history = get(IDS.ITEM_HISTORY);
-        if(!history) return;
-        const rows = Array.from(history.querySelectorAll('.item-history-row'));
-        const row = rows.find(r =>
-            Number(r.dataset.historyIdx) === Number(historyIdx)
-        );
-        if(row){
-            rows.forEach(r => r.classList.remove('selected'));
-            row.classList.add('selected');
-            focusKeyboardControl(row);
-            row.scrollIntoView({block:'nearest'});
-        } else if(rows[0]){
-            rows[0].classList.add('selected');
-            focusKeyboardControl(rows[0]);
-        }
-    }
-
-    function p12ToP03(){
-        const detail = get(IDS.DETAIL);
-        const ctx = itemHistoryBillContext
-            ? {...itemHistoryBillContext}
-            : null;
-        if(!detail || !ctx?.itemId) return false;
-
-        closeDirect(IDS.DETAIL);
-        closeDirect(IDS.EDIT);
-        closeDirect(IDS.PAYMENT);
-
-        billHistoryReturnContext = null;
-        billEditReturnToDetail = null;
-        itemHistorySelectedItemId = String(ctx.itemId);
-        itemHistoryBillContext = {...ctx};
-
-        clearItemRouteTrail();
-
-        // Rebuild P03 from the exact Item ID. P02 remains the intended
-        // previous page when it was the originating Item Master.
-        openItemHistoryForItem(ctx.itemId);
-
-        const history = get(IDS.ITEM_HISTORY);
-        if(history){
-            history.dataset.route = 'item-history';
-            history.dataset.returnToItemMaster = '1';
-            history.dataset.returnToMain =
-                window.smartshopItemMasterRouteFromMain ? '1' : '0';
-        }
-
-        setTimeout(() => focusItemHistoryBill(ctx.historyIdx), 140);
-        return true;
-    }
-
-    function p03ToP02(){
-        const history = get(IDS.ITEM_HISTORY);
-        const itemId = String(
-            itemHistorySelectedItemId ||
-            itemHistoryBillContext?.itemId ||
-            ''
-        );
-        if(!history || !itemId) return false;
-
-        closeDirect(IDS.ITEM_HISTORY);
-        closeDirect(IDS.DETAIL);
-        closeDirect(IDS.EDIT);
-        closeDirect(IDS.PAYMENT);
-
-        clearItemRouteTrail();
-
-        const master = get(IDS.ITEM_MASTER);
-        if(!master) return false;
-
-        // P02 is now the only active page in this route.
-        renderMasterItemsTable();
-        master.classList.add('active');
-        master.dataset.route = 'item-master-main';
-        master.dataset.returnToMain =
-            window.smartshopItemMasterRouteFromMain ? '1' : '0';
-
-        if(Array.isArray(window.modalStack)){
-            window.modalStack = window.modalStack.filter(x => x !== IDS.ITEM_MASTER);
-            window.modalStack.push(IDS.ITEM_MASTER);
-        }
-        if(typeof refreshModalStack === 'function') refreshModalStack();
-
-        setTimeout(() => focusItemMasterRow(itemId), 120);
-        return true;
-    }
-
-    function p02ToMain(){
-        const master = get(IDS.ITEM_MASTER);
-        if(!master) return false;
-
-        closeDirect(IDS.ITEM_MASTER);
-        clearItemRouteTrail();
-
-        master.dataset.route = '';
-        master.dataset.returnToMain = '0';
-        window.smartshopItemMasterRouteFromMain = false;
-        itemHistorySelectedItemId = null;
-        itemHistoryReturnElement = null;
-        itemHistoryBillContext = null;
-        billHistoryReturnContext = null;
-        billEditReturnToDetail = null;
-
-        const main = get(IDS.MAIN);
+        window.billHistoryReturnToM12Only=false;
+        window.billHistoryOpenedFromM12=false;
+        if(typeof refreshModalStack==='function') refreshModalStack();
+        const main=get('main-bill-list');
         if(main){
-            main.classList.add('selected');
+            main.classList.remove('selected');
             main.focus({preventScroll:true});
         }
-
-        // Final reverse step must restore the exact EM13 control on Main Dashboard.
-        setTimeout(() => {
-            const em13 =
-                document.querySelector('[data-main-code="EM13"]') ||
-                document.querySelector('[data-page-code="EM13"]') ||
-                document.querySelector('[data-code="EM13"]') ||
-                document.getElementById('EM13');
-            if(em13){
-                if(em13.tabIndex < 0) em13.tabIndex = 0;
-                em13.focus({preventScroll:true});
-                em13.classList.add('selected');
-            }
-        }, 80);
         return true;
     }
 
-    // Expose the exact route transitions to the earlier universal ESC controller.
-    // This prevents the generic controller from consuming ESC before this router.
-    window.smartshopItemHistoryEscP12ToP03 = p12ToP03;
-    window.smartshopItemHistoryEscP03ToP02 = p03ToP02;
-    window.smartshopItemHistoryEscP02ToMain = p02ToMain;
+    window.addEventListener('keydown',function(e){
+        if(e.key!=='Escape') return;
+        if(e.__smartshopEscHandled || e.__smartshopReturnHandled) return;
 
-    window.addEventListener('keydown', function(e){
-        if(e.key !== 'Escape') return;
+        // Waiting Bills is intentionally blocking while a waiting bill exists.
+        const waiting=get('modal-waiting-bills');
+        if(waiting?.classList.contains('active')){
+            const waitingTabs=typeof getWaitingBillTabs==='function' ? getWaitingBillTabs() : [];
+            if(waitingTabs.length>0){
+                if(!consume(e)) return;
+                if(typeof renderWaitingBillsPopup==='function') renderWaitingBillsPopup();
+                if(typeof updateWaitingBillsPopupSelection==='function') updateWaitingBillsPopupSelection();
+                return;
+            }
+        }
 
-        const detail = get(IDS.DETAIL);
-        const history = get(IDS.ITEM_HISTORY);
-        const master = get(IDS.ITEM_MASTER);
+        const top=topModalId();
+        if(!top) return;
 
-        // P12 -> P03: Item History has priority over generic P12 handling.
-        if(isActive(IDS.DETAIL) &&
-           (detail?.dataset.route === 'item-history-detail' ||
-            detail?.dataset.returnToItemHistory === '1' ||
-            itemHistoryBillContext)){
-            if(!consume(e)) return;
-            p12ToP03();
+        // Bill Edit is a page replacement in the existing workflow.
+        if(top==='modal-bill' && editedBillBack()){
+            consume(e);
             return;
         }
 
-        // P03 -> P02.
-        if(isActive(IDS.ITEM_HISTORY) &&
-           history?.dataset.route === 'item-history' &&
-           history?.dataset.returnToItemMaster === '1'){
-            if(!consume(e)) return;
-            p03ToP02();
+        // Edited Bill History flow: P11 is the final return page before Main.
+        if(top==='modal-history' && historyBackToMain()){
+            consume(e);
             return;
         }
 
-        // P02 -> Main only for the Main-origin Item Master route.
-        if(isActive(IDS.ITEM_MASTER) &&
-           master?.dataset.route === 'item-master-main' &&
-           master?.dataset.returnToMain === '1'){
+        // The normal case: close exactly the top child and restore its parent.
+        if(hasReturnEntryFor(top) && typeof hideModal==='function'){
             if(!consume(e)) return;
-            p02ToMain();
+            if(top==='modal-bill' && typeof confirmAndCloseBill==='function'){
+                confirmAndCloseBill();
+            }else{
+                hideModal(top);
+            }
             return;
         }
-    }, true);
+
+        // If a workflow replaced the generic trail, use its explicit exact context.
+        if(top==='modal-bill-detail' && detailBackByContext()){
+            consume(e);
+            return;
+        }
+
+        // Existing exact-row helpers remain the fallback when no generic trail exists.
+        if(top==='modal-item-history' && typeof closeItemHistoryPopup==='function'){
+            if(!consume(e)) return;
+            closeItemHistoryPopup();
+            return;
+        }
+        if(top==='modal-saved-items' && typeof closeItemMasterModal==='function'){
+            if(!consume(e)) return;
+            closeItemMasterModal();
+            return;
+        }
+
+        // Normal Bill close keeps its existing confirmation.
+        if(top==='modal-bill' && typeof confirmAndCloseBill==='function'){
+            if(!consume(e)) return;
+            confirmAndCloseBill();
+            return;
+        }
+
+        if(!consume(e)) return;
+        if(typeof hideModal==='function') hideModal(top);
+        else get(top)?.classList.remove('active');
+    },true);
+})();
+</script>
+
+<script id="smartshop-item-history-route-v1">
+/* Compatibility names for older callers. They now use the central trail. */
+(function(){
+    window.smartshopItemHistoryEscP12ToP03=function(){
+        if(document.getElementById('modal-bill-detail')?.classList.contains('active') &&
+           typeof hideModal==='function'){
+            return hideModal('modal-bill-detail');
+        }
+        return false;
+    };
+    window.smartshopItemHistoryEscP03ToP02=function(){
+        if(document.getElementById('modal-item-history')?.classList.contains('active') &&
+           typeof hideModal==='function'){
+            return hideModal('modal-item-history');
+        }
+        return false;
+    };
+    window.smartshopItemHistoryEscP02ToMain=function(){
+        if(document.getElementById('modal-saved-items')?.classList.contains('active')){
+            if(typeof closeItemMasterModal==='function') return closeItemMasterModal();
+            if(typeof hideModal==='function') return hideModal('modal-saved-items');
+        }
+        return false;
+    };
 })();
 </script>
 

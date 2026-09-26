@@ -4667,6 +4667,12 @@ button,input,select,textarea{touch-action:manipulation;}
     let billHistoryOpenedFromM12 = false;
 
     function openItemHistoryForItem(itemId) {
+        // IM-02 एकदा उघडल्यानंतर IM-03 -> Modify -> BN-05 workflow मध्ये
+        // IM-02 पुन्हा उघडू देऊ नका. Item Master मधून item selection सुरू राहील.
+        if (billEditReturnToDetail?.returnSource === 'item-history') {
+            return;
+        }
+
         // This is a genuine Item History flow, so clear any stale Bill History return context.
         billHistoryReturnContext = null;
         itemHistorySelectedItemId = String(itemId);

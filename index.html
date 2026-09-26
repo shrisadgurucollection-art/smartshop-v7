@@ -2937,7 +2937,22 @@ button,input,select,textarea{touch-action:manipulation;}
             }
         }
 
-        if (key === 'F2') { e.preventDefault(); if (getWaitingBillTabs().length > 0) { openWaitingBillsPopup(); } else { createNewBillTab(); } return; }
+        // New Bill / Waiting Bill shortcut:
+        // 1st press -> New Bill, 2nd press -> another New Bill,
+        // 3rd press (when an earlier bill is waiting) -> Waiting Bills popup.
+        // Shift+2 is supported alongside F2.
+        const isNewBillShortcut = key === 'F2' ||
+            (e.shiftKey && (e.code === 'Digit2' || e.keyCode === 50));
+        if (isNewBillShortcut) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (getWaitingBillTabs().length > 0) {
+                openWaitingBillsPopup();
+            } else {
+                createNewBillTab();
+            }
+            return;
+        }
         if (key === 'End') {
             const billModal = document.getElementById('modal-bill');
             if (billModal && billModal.classList.contains('active')) { e.preventDefault(); openPaymentPopup(); return; }
@@ -6910,20 +6925,41 @@ button,input,select,textarea{touch-action:manipulation;}
         }, 50);
     }
 
+    function closeWaitingBillsPopupDirect() {
+        const popup = document.getElementById('modal-waiting-bills');
+        if (popup) popup.classList.remove('active');
+        if (Array.isArray(modalStack)) {
+            modalStack = modalStack.filter(id => id !== 'modal-waiting-bills');
+        }
+        // P09 is a control popup, not a return destination. Remove only its
+        // own trail entry so selecting a waiting bill can never jump elsewhere.
+        if (Array.isArray(pageReturnStack)) {
+            pageReturnStack = pageReturnStack.filter(t =>
+                t.modalId !== 'modal-waiting-bills' &&
+                t.childModalId !== 'modal-waiting-bills'
+            );
+        }
+        if (typeof refreshModalStack === 'function') refreshModalStack();
+    }
+
     function selectWaitingBillFromPopup(index) {
         waitingBillsPopupIndex = index;
         const waitingTabs = getWaitingBillTabs();
         if (index < 0 || index >= waitingTabs.length) return;
         const tabId = waitingTabs[index].id;
+
+        // This is a real Waiting Bill edit. BN-05 must stay blocking until
+        // this bill is explicitly Saved or Cancelled.
         waitingBillReturnActive = true;
-        hideModal('modal-waiting-bills');
+        closeWaitingBillsPopupDirect();
         switchBillTab(tabId);
     }
 
     function createNewBillFromWaitingPopup() {
-        // P09 "＋ New Bill" starts a fresh bill, not a Waiting Bill return route.
+        // P09 "＋ New Bill" starts a genuinely new bill page.
+        // It is not a return to the old page and is not a Waiting Bill edit.
         waitingBillReturnActive = false;
-        hideModal('modal-waiting-bills');
+        closeWaitingBillsPopupDirect();
         setTimeout(() => {
             createNewBillTab();
         }, 0);
@@ -7543,6 +7579,19 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
         if(top==='modal-saved-items' && typeof closeItemMasterModal==='function'){
             if(!consume(e)) return;
             closeItemMasterModal();
+            return;
+        }
+
+        // Waiting Bill protection:
+        // BN-05 cannot return to another page while a Waiting Bill is active.
+        // The user must Save or Cancel the current bill first. Save/Cancel then
+        // returns to P09 if other waiting bills remain, otherwise to Main.
+        if(top==='modal-bill' &&
+           (waitingBillReturnActive ||
+            (typeof getWaitingBillTabs === 'function' && getWaitingBillTabs().length > 0)) &&
+           typeof confirmAndCloseBill === 'function'){
+            if(!consume(e)) return;
+            confirmAndCloseBill();
             return;
         }
 

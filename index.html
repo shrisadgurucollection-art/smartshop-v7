@@ -7019,7 +7019,20 @@ button,input,select,textarea{touch-action:manipulation;}
     }
 
     function createNewBillFromWaitingPopup() {
-        hideModal('modal-waiting-bills');
+        // Waiting Bills -> New Bill:
+        // Close only the Waiting Bills popup itself. Do NOT call hideModal()
+        // here because hideModal() restores its parent P08 immediately.
+        // The newly-created third bill must remain the active child of P08
+        // until that bill is actually Cancelled/Closed or Saved.
+        const waitingModal = document.getElementById('modal-waiting-bills');
+        if (waitingModal) waitingModal.classList.remove('active');
+        modalStack = modalStack.filter(id => id !== 'modal-waiting-bills');
+        refreshModalStack();
+        pageReturnStack = pageReturnStack.filter(entry =>
+            entry.modalId !== 'modal-waiting-bills' &&
+            entry.childModalId !== 'modal-waiting-bills'
+        );
+
         createNewBillTab();
     }
 

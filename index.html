@@ -3766,31 +3766,6 @@ button,input,select,textarea{touch-action:manipulation;}
         // rolled back when a bill is cancelled/closed.
         if (tabIndex >= 0) billTabs.splice(tabIndex, 1);
 
-        // If this bill was opened from P09 Waiting Bills, always return to P09
-        // after Save/Cancel. Never jump to another bill or Main while other
-        // waiting bills still exist.
-        if (waitingBillReturnActive) {
-            waitingBillReturnActive = false;
-            activeTabId = null;
-            persistData();
-            renderBillTabsBar();
-
-            const remainingWaiting = billTabs.some(t =>
-                Array.isArray(t.items) &&
-                t.items.some(item => item && item.name && (parseFloat(item.total) || 0) > 0)
-            );
-
-            hideModal('modal-bill');
-            if (remainingWaiting) {
-                setTimeout(() => {
-                    openWaitingBillsPopup();
-                }, 50);
-            } else {
-                setTimeout(() => focusMainNewBill(), 50);
-            }
-            return;
-        }
-
         activeTabId = billTabs.length ? billTabs[billTabs.length - 1].id : null;
 
         persistData();
@@ -6961,6 +6936,7 @@ button,input,select,textarea{touch-action:manipulation;}
             }
         }
     }
+
 
 
 /* ===== PC WINDOW CONTROLS JS ===== */

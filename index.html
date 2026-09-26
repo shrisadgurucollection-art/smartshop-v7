@@ -997,8 +997,7 @@ body{background:#edf2f8!important;color:var(--modern-text);}
         .field-box{width:100%!important;min-width:0!important;}
         .field-box input,.field-box select,.field-box textarea{width:100%!important;}
         .item-search-box{min-height:46px!important;font-size:16px!important;padding:11px 12px!important;position:sticky;top:0;z-index:5;background:#fff;}
-        .photo-preview-box{width:86px!important;height:86px!important;}
-        /* Item Master / Item Create */
+        .photo-preview-box{width:86px!important;height:86px!important;}        /* Item Master / Item Create */
         #modal-saved-items .modal-content,#modal-create-item .modal-content{height:92dvh!important;}
         #modal-saved-items .modal-body,#modal-create-item .modal-body{padding:10px!important;}
         #modal-create-item .modal-body>div:first-child{padding:10px!important;}
@@ -1997,8 +1996,7 @@ button,input,select,textarea{touch-action:manipulation;}
                         </tr>
                     </thead>
                     <tbody id="b-list-add-tbody"></tbody>                </table>
-            </div>
-        </div>
+            </div>        </div>
     </div>
 </div>
 
@@ -2997,8 +2995,7 @@ button,input,select,textarea{touch-action:manipulation;}
             }
             // Payment & Save popup is the top-level payment window.
             // ESC must close this popup immediately and leave the bill open.
-            const paymentPopupEsc = document.getElementById('modal-payment-popup');
-            if (paymentPopupEsc?.classList.contains('active')) {
+            const paymentPopupEsc = document.getElementById('modal-payment-popup');            if (paymentPopupEsc?.classList.contains('active')) {
                 hideModal('modal-payment-popup');
                 return;
             }
@@ -3693,6 +3690,18 @@ button,input,select,textarea{touch-action:manipulation;}
         const modal = document.getElementById(id);
         if (!modal) return;
 
+        // WAITING BILLS is a blocking gate. While any waiting bill exists,
+        // P09 must not close through ESC, X, mouse or generic modal handling.
+        // This prevents its return trail from restoring the Main Page early.
+        if (id === 'modal-waiting-bills' &&
+            typeof waitingBillsStrictMode !== 'undefined' &&
+            waitingBillsStrictMode &&
+            Array.isArray(billTabs) && billTabs.length > 0) {
+            renderWaitingBillsPopup();
+            setTimeout(() => updateWaitingBillsPopupSelection(), 0);
+            return;
+        }
+
         // हा modal सर्वात वरचा modal आहे का ते तपासा.
         // Underlying modal hide करताना त्याचा focus जबरदस्तीने बदलू नये.
         const activeModals = Array.from(document.querySelectorAll('.modal.active'));
@@ -3998,7 +4007,6 @@ button,input,select,textarea{touch-action:manipulation;}
 
     function closeBillTab(tabId, e) {
         if(e) e.stopPropagation();
-
         // Waiting Bills source logic: clicking the X on an individual waiting
         // bill must use the same Yes/No confirmation as ESC. Never remove the
         // bill before confirmation.
@@ -4997,7 +5005,6 @@ button,input,select,textarea{touch-action:manipulation;}
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     e.stopPropagation();
-
                     // In Bill flow, Enter on an Item List row MUST return
                     // directly to that Bill row and put focus on Quantity.
                     if (itemMasterBillRowIndex !== null) {
@@ -5997,8 +6004,7 @@ button,input,select,textarea{touch-action:manipulation;}
             const row = rows.find(r => Number(r.dataset.historyIdx) === Number(ctx.historyIdx));
             if (row) {
                 rows.forEach(r => r.classList.toggle('selected', r === row));
-                focusKeyboardControl(row);
-            }
+                focusKeyboardControl(row);            }
         }, 180);
         return true;
     }
@@ -6997,7 +7003,6 @@ button,input,select,textarea{touch-action:manipulation;}
 
         count.textContent = `एकूण Waiting Bills : ${billTabs.length}`;
         list.innerHTML = '';
-
         if (billTabs.length === 0) {
             const empty = document.createElement('div');
             empty.className = 'waiting-bills-popup-empty';

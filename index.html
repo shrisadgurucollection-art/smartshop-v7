@@ -7714,7 +7714,13 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
     },
     back(){
       const m=topModal();
-      if(!m) return false;
+
+      // Main page is the end of the return route. Once M12/Main is reached,
+      // a further ESC must do nothing. Consume it here so older legacy ESC
+      // handlers cannot replay the already-completed P12 -> P11 -> M12 route.
+      if(!m){
+        return true;
+      }
 
       /*
        * Exact business return contexts have priority because they carry

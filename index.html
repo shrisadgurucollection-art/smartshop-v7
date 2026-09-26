@@ -2801,300 +2801,8 @@ button,input,select,textarea{touch-action:manipulation;}
         }
 
         if (key === 'Escape') {
-            if (e.__smartshopEscHandled) return;
-            e.preventDefault();
-            e.stopPropagation();
-            closeCalculator();
-            return true;
-        }
-
-        if (key === 'Enter' || key === '=') {
-            e.preventDefault();
-            calculateExpression();
-            return true;
-        }
-        if (key === 'Backspace') {
-            e.preventDefault();
-            calculatorBackspace();
-            return true;
-        }
-        if (key === 'Delete') {
-            e.preventDefault();
-            resetCalculatorState();
-            return true;
-        }
-
-        const map = { 'x':'*', 'X':'*', '×':'*', '÷':'/', ',':'.' };
-        const value = map[key] || key;
-        if (/^[0-9+\-*/().]$/.test(value)) {
-            e.preventDefault();
-            appendCalculatorValue(value);
-            return true;
-        }
-        return false;
-    }
-
-    function setupCalculator() {
-        const modal = document.getElementById('modal-calculator');
-        const keypad = document.getElementById('calculator-keypad');
-        const closeBtn = document.getElementById('calculator-close-btn');
-        const handle = document.getElementById('calculator-drag-handle');
-        const win = modal ? modal.querySelector('.calculator-window') : null;
-        if (!modal || !keypad || !closeBtn || !handle || !win) return;
-
-        keypad.addEventListener('click', function(e) {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-            const value = btn.dataset.calcValue;
-            const action = btn.dataset.calcAction;
-            if (value !== undefined) appendCalculatorValue(value);
-            else if (action === 'clear') resetCalculatorState();
-            else if (action === 'backspace') calculatorBackspace();
-            else if (action === 'equals') calculateExpression();
-        });
-
-        closeBtn.addEventListener('click', closeCalculator);
-
-        const minimizeBtn = document.getElementById('calculator-minimize-btn');
-        if (minimizeBtn) minimizeBtn.addEventListener('click', function(e) {
-            e.preventDefault(); e.stopPropagation();
-            const minimized = win.classList.toggle('calculator-minimized');
-            minimizeBtn.textContent = minimized ? '□' : '−';
-            minimizeBtn.title = minimized ? 'Restore' : 'Minimize';
-        });
-
-        // Mouse drag: calculator can be moved anywhere on screen.
-        handle.addEventListener('mousedown', function(e) {
-            if (e.button !== 0) return;
-            const rect = win.getBoundingClientRect();
-            calculatorDrag = {
-                dx: e.clientX - rect.left,
-                dy: e.clientY - rect.top
-            };
-            win.style.transform = 'none';
-            e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', function(e) {
-            if (!calculatorDrag || !modal.classList.contains('active')) return;
-            const rect = win.getBoundingClientRect();
-            let left = e.clientX - calculatorDrag.dx;
-            let top = e.clientY - calculatorDrag.dy;
-            const margin = 4;
-            left = Math.max(margin, Math.min(left, window.innerWidth - rect.width - margin));
-            top = Math.max(margin, Math.min(top, window.innerHeight - rect.height - margin));
-            win.style.left = left + 'px';
-            win.style.top = top + 'px';
-        });
-
-        document.addEventListener('mouseup', function() {
-            calculatorDrag = null;
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', setupCalculator);
-    setupCalculator();
-
-    // Insert Item Cost shortcut.
-    window.addEventListener('keydown', function(e) {
-        if (e.key !== 'Insert') return;
-        const billModalF5Capture = document.getElementById('modal-bill');
-        if (!billModalF5Capture || !billModalF5Capture.classList.contains('active')) return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        openItemCostPopup();
-    }, true);
-
-    document.addEventListener('keydown', function(e) {
-        // F12 opens the calculator from any software page.
-        if (e.key === 'F12' || e.keyCode === 123) {
-            e.preventDefault();
-            e.stopPropagation();
-            openCalculator();
-            return;
-        }
-
-        // While calculator is open, all supported keyboard keys belong to it.
-        if (handleCalculatorKey(e)) return;
-
-        if (document.getElementById('modal-waiting-bills')?.classList.contains('active')) {
-            handleWaitingBillsPopupKeyboard(e);
-            if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') return;
-        }
-        const key = e.key;
-
-        // Delete key: delete the currently focused bill item row.
-        if ((key === 'Delete' || e.keyCode === 46) &&
-            document.getElementById('modal-bill')?.classList.contains('active')) {
-            const row = document.activeElement?.closest('#bill-items-tbody tr');
-            if (row) {
-                const deleteBtn = row.querySelector('.btn-delete-sm');
-                if (deleteBtn) {
-                    e.preventDefault();
-                    deleteBtn.click();
-                    return;
-                }
-            }
-        }
-
-        if (key === 'F2') { e.preventDefault(); if (billTabs.length >= 2) { openWaitingBillsPopup(); } else { createNewBillTab(); } return; }
-        if (key === 'End') {
-            const billModal = document.getElementById('modal-bill');
-            if (billModal && billModal.classList.contains('active')) { e.preventDefault(); openPaymentPopup(); return; }
-        }
-        if (key === 'Insert') {
-            const billModalF5 = document.getElementById('modal-bill');
-            if (billModalF5 && billModalF5.classList.contains('active')) {
-                e.preventDefault();
-                e.stopPropagation();
-                openItemCostPopup();
-                return;
-            }
-        }
-
-        if (key === 'Escape') {
-            // A P12 -> P11 return is a single, atomic ESC action. The capture-phase
-            // router normally consumes this first; this guard is the safety net
-            // for any older ESC listener so the same physical key event can never
-            // continue into P11 -> M12 or the P12 reopen logic.
-            if (e.__smartshopEscHandled) return;
-
-            const activeBillDetailForHistoryEsc = document.getElementById('modal-bill-detail');
-            const billHistoryRouteActive = !!(
-                activeBillDetailForHistoryEsc?.classList.contains('active') &&
-                (
-                    activeBillDetailForHistoryEsc.dataset.returnToBillHistory === '1' ||
-                    billHistoryReturnContext ||
-                    (billEditReturnToDetail && billEditReturnToDetail.returnSource === 'bill-history')
-                )
-            );
-            if (billHistoryRouteActive) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                e.__smartshopEscHandled = true;
-                if (typeof returnFromBillDetailToHistory === 'function') {
-                    returnFromBillDetailToHistory();
-                }
-                return;
-            }
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            // F5 Item Cost popup must close first and leave the Bill page open.
-            const itemCostPopupEsc = document.getElementById('modal-item-cost-popup');
-            if (itemCostPopupEsc?.classList.contains('active')) {
-                hideModal('modal-item-cost-popup');
-                return;
-            }
-
-            // Payment & Save popup is the top-level payment window.
-            // ESC must close this popup immediately and leave the bill open.
-            const paymentPopupEsc = document.getElementById('modal-payment-popup');
-            if (paymentPopupEsc?.classList.contains('active')) {
-                hideModal('modal-payment-popup');
-                return;
-            }
-
-            // Barcode popup is on top. ESC must close only the barcode popup
-            // and return focus to the Item Master / Item Picker row that opened it.
-            const barcodePopup = document.getElementById('modal-item-save-preview');
-            if (barcodePopup?.classList.contains('active')) {
-                closeItemSavePreview();
-                return;
-            }
-
-            // Exact Edit Bill -> Bill Detail return while the editable bill is open.
-            if (billEditReturnToDetail &&
-                document.getElementById('modal-bill')?.classList.contains('active')) {
-                if (returnFromEditedBillToDetail()) return;
-            }
-
-            // After P10 Save, P10 and P22 are already closed. The FIRST ESC
-            // must now open P12. No intermediate page is allowed.
-            if (billEditReturnToDetail &&
-                !document.getElementById('modal-bill')?.classList.contains('active') &&
-                !document.getElementById('modal-bill-detail')?.classList.contains('active')) {
-                if (returnFromEditedBillToDetail()) return;
-            }
-
-            // Exact Bill Detail -> Bill History return after an edited saved bill.
-            if (e.__smartshopEscHandled) return;
-
-            if (billHistoryReturnContext &&
-                document.getElementById('modal-bill-detail')?.classList.contains('active')) {
-                if (returnFromBillDetailToHistory()) return;
-            }
-
-            // FINAL edited-bill return step: P11 -> M12 only.
-            // Do not pass through pageReturnStack, because that stack can
-            // contain the older P12 trail from the original navigation.
-            if ((billHistoryReturnToM12Only || billHistoryOpenedFromM12) &&
-                document.getElementById('modal-history')?.classList.contains('active')) {
-                billHistoryReturnToM12Only = false;
-                billHistoryOpenedFromM12 = false;
-                const historyModal = document.getElementById('modal-history');
-                historyModal.classList.remove('active');
-                modalStack = modalStack.filter(id => id !== 'modal-history');
-                pageReturnStack = pageReturnStack.filter(t =>
-                    t.modalId !== 'modal-bill-detail' &&
-                    t.childModalId !== 'modal-bill-detail' &&
-                    t.modalId !== 'modal-history' &&
-                    t.childModalId !== 'modal-history'
-                );
-                refreshModalStack();
-
-                const m12 = document.getElementById('main-bill-list');
-                if (m12) {
-                    m12.focus({preventScroll:true});
-                    m12.classList.remove('selected');
-                }
-                return;
-            }
-
-            // Legacy Bill Detail -> Item History return remains only for the genuine Item History flow.
-            if (itemHistoryBillContext &&
-                document.getElementById('modal-bill-detail')?.classList.contains('active')) {
-                if (returnFromBillDetailToItemHistory()) return;
-            }
-
-            // ESC must always close the ACTUAL topmost popup.
-            // Do not use DOM order here: Item History can be opened after
-            // Item Master even though its HTML appears earlier/later.
-            const activeItemHistory = document.getElementById('modal-item-history');
-            if (activeItemHistory?.classList.contains('active')) {
-                // IMPORTANT: use the dedicated reverse-navigation handler.
-                // hideModal() uses the generic modal trail and can jump to Main.
-                closeItemHistoryPopup();
-                return;
-            }
-
-            // Bill -> Item Master: ESC closes Item Master first.
-            const activeItemMaster = document.getElementById('modal-saved-items');
-            if (activeItemMaster?.classList.contains('active')) {
-                closeItemMasterModal();
-                return;
-            }
-
-            // Central modal stack is the source of truth for popup order.
-            const activeStack = Array.isArray(modalStack)
-                ? modalStack.filter(id => document.getElementById(id)?.classList.contains('active'))
-                : [];
-
-            if (activeStack.length) {
-                const topId = activeStack[activeStack.length - 1];
-                if (topId === 'modal-bill') confirmAndCloseBill();
-                else hideModal(topId);
-                return;
-            }
-
-            // Safe fallback for any legacy popup not registered in modalStack.
-            const activeModals = Array.from(document.querySelectorAll('.modal.active'));
-            if (activeModals.length) {
-                const top = activeModals[activeModals.length - 1];
-                if (top.id === 'modal-bill') confirmAndCloseBill();
-                else hideModal(top.id);
-            }
+            // ESC/Back is owned exclusively by SMARTSHOP CENTRAL NAVIGATION V3.
+            // Do not run any legacy navigation here.
             return;
         }
         const paymentPopup = document.getElementById('modal-payment-popup');
@@ -7365,45 +7073,82 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
 })();
 </script>
 
-<script id="smartshop-central-navigation-v3">
+<script id="smartshop-central-navigation-v4">
 /*
- * SMARTSHOP CENTRAL NAVIGATION V3
- * One and only one ESC/Back decision point.
- * Does not change button click/Enter logic or page UI.
+ * SMARTSHOP CENTRAL NAVIGATION V4
+ * ESC has exactly ONE owner.
+ * One ESC closes exactly ONE top page. It never reopens the child.
  */
 (function(){
   const get=id=>document.getElementById(id);
-  const isActive=id=>!!get(id)?.classList.contains('active');
-  const stack=()=>Array.isArray(window.modalStack)?window.modalStack:[];
+  const active=id=>!!get(id)?.classList.contains('active');
   const trail=()=>typeof window.smartshopGetPageReturnStack==='function'
       ? window.smartshopGetPageReturnStack() : [];
+  const modalIds=()=>Array.from(document.querySelectorAll('.modal.active')).map(x=>x.id);
 
-  function topModal(){
-    const active=Array.from(document.querySelectorAll('.modal.active'));
-    if(!active.length) return null;
-
-    // Prefer the actual visual z-index first. This prevents an old modalStack
-    // order from keeping IM-01 / Bill History visually stuck on screen.
-    active.sort((a,b)=>{
-      const za=parseInt(getComputedStyle(a).zIndex)||0;
-      const zb=parseInt(getComputedStyle(b).zIndex)||0;
-      if(za!==zb) return za-zb;
-      const sa=stack().indexOf(a.id), sb=stack().indexOf(b.id);
-      return sa-sb;
+  function top(){
+    const all=Array.from(document.querySelectorAll('.modal.active'));
+    if(!all.length) return null;
+    all.sort((a,b)=>{
+      const za=Number(getComputedStyle(a).zIndex)||0;
+      const zb=Number(getComputedStyle(b).zIndex)||0;
+      return za-zb;
     });
-    return active[active.length-1].id;
+    return all[all.length-1].id;
   }
 
-  function consume(e){
-    if(e.__smartshopCentralV3) return false;
+  function stop(e){
+    if(e.__smartshopCentralV4) return false;
     e.preventDefault();
     e.stopImmediatePropagation();
-    e.__smartshopCentralV3=true;
+    e.__smartshopCentralV4=true;
     return true;
   }
 
-  function explicitBack(id){
-    // These are existing workflow callbacks; V3 only decides when they run.
+  function restoreEntry(entry){
+    if(!entry || entry.modalId==='__main-page__') {
+      if(entry?.modalId==='__main-page__'){
+        setTimeout(()=>{
+          const el=typeof resolvePageReturnFocus==='function'
+            ? resolvePageReturnFocus(entry) : null;
+          if(el && typeof focusKeyboardControl==='function') focusKeyboardControl(el);
+          else if(entry.focusEl && document.contains(entry.focusEl) &&
+                  typeof focusKeyboardControl==='function') focusKeyboardControl(entry.focusEl);
+        },80);
+      }
+      return;
+    }
+
+    window.smartshopNavigationRestoring=true;
+    try{
+      if(entry.modalId==='modal-item-history' && entry.data?.itemId!=null &&
+         typeof openItemHistoryForItem==='function'){
+        openItemHistoryForItem(entry.data.itemId);
+      }else if(entry.modalId==='modal-history' &&
+               typeof openHistoryModal==='function'){
+        openHistoryModal(entry.data?.paymentFilter||null);
+      }else if(get(entry.modalId)){
+        // Directly activate the parent without recording a NEW child route.
+        get(entry.modalId).classList.add('active');
+        if(Array.isArray(window.modalStack) && !window.modalStack.includes(entry.modalId))
+          window.modalStack.push(entry.modalId);
+        if(typeof refreshModalStack==='function') refreshModalStack();
+      }
+    }finally{
+      window.smartshopNavigationRestoring=false;
+    }
+
+    setTimeout(()=>{
+      const el=typeof resolvePageReturnFocus==='function'
+        ? resolvePageReturnFocus(entry) : null;
+      if(el && typeof focusKeyboardControl==='function') focusKeyboardControl(el);
+      else if(entry.focusEl && document.contains(entry.focusEl) &&
+              typeof focusKeyboardControl==='function') focusKeyboardControl(entry.focusEl);
+    },100);
+  }
+
+  function specialBack(id){
+    // These callbacks are existing workflow-specific returns.
     if(id==='modal-bill' &&
        typeof billEditReturnToDetail!=='undefined' &&
        billEditReturnToDetail &&
@@ -7412,16 +7157,13 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
     }
 
     if(id==='modal-bill-detail'){
-      if(typeof billHistoryReturnContext!=='undefined' &&
-         billHistoryReturnContext &&
-         typeof returnFromBillDetailToHistory==='function'){
+      if(typeof billHistoryReturnContext!=='undefined' && billHistoryReturnContext &&
+         typeof returnFromBillDetailToHistory==='function')
         return !!returnFromBillDetailToHistory();
-      }
-      if(typeof itemHistoryBillContext!=='undefined' &&
-         itemHistoryBillContext &&
-         typeof returnFromBillDetailToItemHistory==='function'){
+
+      if(typeof itemHistoryBillContext!=='undefined' && itemHistoryBillContext &&
+         typeof returnFromBillDetailToItemHistory==='function')
         return !!returnFromBillDetailToItemHistory();
-      }
     }
 
     if(id==='modal-history' &&
@@ -7429,21 +7171,87 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
         (typeof billHistoryOpenedFromM12!=='undefined' && billHistoryOpenedFromM12))){
       if(typeof billHistoryReturnToM12Only!=='undefined') billHistoryReturnToM12Only=false;
       if(typeof billHistoryOpenedFromM12!=='undefined') billHistoryOpenedFromM12=false;
-      const m=get('modal-history');
+      const m=get(id);
       if(m) m.classList.remove('active');
       if(Array.isArray(window.modalStack))
-        window.modalStack=window.modalStack.filter(x=>x!=='modal-history');
+        window.modalStack=window.modalStack.filter(x=>x!==id);
       if(typeof refreshModalStack==='function') refreshModalStack();
       const main=get('main-bill-list');
-      if(main) setTimeout(()=>focusKeyboardControl(main),60);
+      if(main && typeof focusKeyboardControl==='function')
+        setTimeout(()=>focusKeyboardControl(main),60);
       return true;
     }
     return false;
   }
 
-  function closeTop(id){
+  function back(e){
+    if(e.__smartshopCentralV4) return false;
+
+    const id=top();
     if(!id) return false;
 
+    stop(e);
+
+    // Existing exact workflow return gets ONE action.
+    if(specialBack(id)) return true;
+
+    const s=trail();
+    const entry=s.length ? s[s.length-1] : null;
+
+    // The current page must be the child named by the last route entry.
+    if(entry && entry.childModalId===id){
+      // Remove route BEFORE closing the page. This prevents the closing
+      // operation from reopening/consuming the same page.
+      s.pop();
+
+      // Special close functions contain their own cleanup.
+      if(id==='modal-item-history' && typeof closeItemHistoryPopup==='function'){
+        closeItemHistoryPopup();
+        return true;
+      }
+      if(id==='modal-saved-items' && typeof closeItemMasterModal==='function'){
+        closeItemMasterModal();
+        return true;
+      }
+      if(id==='modal-item-save-preview' && typeof closeItemSavePreview==='function'){
+        closeItemSavePreview();
+        return true;
+      }
+
+      // Bill confirmation is retained, but route is restored if user says No.
+      if(id==='modal-bill' && typeof confirmAndCloseBill==='function'){
+        const beforeActive=active(id);
+        const beforeLen=s.length;
+        confirmAndCloseBill();
+        if(beforeActive && active(id) && s.length===beforeLen) s.push(entry);
+        return true;
+      }
+
+      // Generic page: close ONLY the current page.
+      const m=get(id);
+      if(m) m.classList.remove('active');
+      if(Array.isArray(window.modalStack))
+        window.modalStack=window.modalStack.filter(x=>x!==id);
+      if(typeof refreshModalStack==='function') refreshModalStack();
+
+      // Normally parent is already underneath. Only restore it if it is not.
+      if(entry.modalId!=='__main-page__' && !active(entry.modalId)){
+        restoreEntry(entry);
+      }else if(entry.modalId==='__main-page__'){
+        restoreEntry(entry);
+      }else{
+        setTimeout(()=>{
+          const el=typeof resolvePageReturnFocus==='function'
+            ? resolvePageReturnFocus(entry) : null;
+          if(el && typeof focusKeyboardControl==='function') focusKeyboardControl(el);
+          else if(entry.focusEl && document.contains(entry.focusEl) &&
+                  typeof focusKeyboardControl==='function') focusKeyboardControl(entry.focusEl);
+        },80);
+      }
+      return true;
+    }
+
+    // No matching route: close exactly the top visible page. Do NOT reopen anything.
     if(id==='modal-item-history' && typeof closeItemHistoryPopup==='function'){
       closeItemHistoryPopup(); return true;
     }
@@ -7453,133 +7261,25 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
     if(id==='modal-item-save-preview' && typeof closeItemSavePreview==='function'){
       closeItemSavePreview(); return true;
     }
-
-    // Bill retains its existing Yes/No close confirmation.
     if(id==='modal-bill' && typeof confirmAndCloseBill==='function'){
       confirmAndCloseBill(); return true;
     }
 
-    if(typeof hideModal==='function'){
-      hideModal(id); return true;
-    }
-
     const m=get(id);
     if(m) m.classList.remove('active');
+    if(Array.isArray(window.modalStack))
+      window.modalStack=window.modalStack.filter(x=>x!==id);
     if(typeof refreshModalStack==='function') refreshModalStack();
     return true;
   }
 
-  function ensureParentVisible(entry){
-    if(!entry || entry.modalId==='__main-page__') return;
+  window.smartshopCentralBackV4=back;
 
-    // If the parent was accidentally hidden, restore it without creating a
-    // second route entry. This is the key protection for nested pages.
-    if(!isActive(entry.modalId) && get(entry.modalId)){
-      window.smartshopNavigationRestoring=true;
-      try{
-        if(entry.modalId==='modal-item-history' && entry.data?.itemId!=null &&
-           typeof openItemHistoryForItem==='function'){
-          openItemHistoryForItem(entry.data.itemId);
-        }else if(entry.modalId==='modal-history' &&
-                 typeof openHistoryModal==='function'){
-          openHistoryModal(entry.data?.paymentFilter||null);
-        }else{
-          showModal(entry.modalId);
-        }
-      }finally{
-        window.smartshopNavigationRestoring=false;
-      }
-    }
-
-    setTimeout(()=>{
-      let target=null;
-      if(typeof resolvePageReturnFocus==='function') target=resolvePageReturnFocus(entry);
-      if(!target && entry.focusEl && document.contains(entry.focusEl)) target=entry.focusEl;
-      if(target && typeof focusKeyboardControl==='function') focusKeyboardControl(target);
-    },120);
-  }
-
-  window.smartshopCentralBackV3=function(e){
-    if(e.__smartshopCentralV3) return false;
-
-    const top=topModal();
-    if(!top) return false;
-
-    consume(e);
-
-    // 1. Workflow-specific exact returns.
-    if(explicitBack(top)) return true;
-
-    const s=trail();
-    const entry=s.length?s[s.length-1]:null;
-
-    // 2. Exact child -> parent route.
-    if(entry && entry.childModalId===top){
-      // Remove the route BEFORE closing so hideModal cannot accidentally
-      // consume/reuse the same entry twice.
-      s.pop();
-
-      if(top==='modal-item-history' && typeof closeItemHistoryPopup==='function'){
-        closeItemHistoryPopup();
-        return true;
-      }
-      if(top==='modal-saved-items' && typeof closeItemMasterModal==='function'){
-        closeItemMasterModal();
-        return true;
-      }
-      if(top==='modal-item-save-preview' && typeof closeItemSavePreview==='function'){
-        closeItemSavePreview();
-        return true;
-      }
-
-      if(top==='modal-bill' && typeof confirmAndCloseBill==='function'){
-        // The confirmation can be cancelled. Restore the route in that case.
-        const wasActive=isActive(top);
-        const before=s.length;
-        confirmAndCloseBill();
-        if(wasActive && isActive(top) && s.length===before) s.push(entry);
-        return true;
-      }
-
-      // Generic child: hide only this page.
-      const m=get(top);
-      if(m){
-        m.classList.remove('active');
-        if(Array.isArray(window.modalStack))
-          window.modalStack=window.modalStack.filter(x=>x!==top);
-        if(typeof refreshModalStack==='function') refreshModalStack();
-      }
-
-      // Parent is already underneath in normal modal navigation. If not,
-      // restore it explicitly and restore the original focus.
-      ensureParentVisible(entry);
-      return true;
-    }
-
-    // 3. If the route stack points to a page which is no longer active,
-    // remove only that stale route and retry once.
-    if(entry && entry.childModalId && !isActive(entry.childModalId)){
-      s.pop();
-      const next=s.length?s[s.length-1]:null;
-      if(next && next.childModalId===top){
-        // Retry through the same deterministic path without generating another event.
-        s.push(next);
-        return window.smartshopCentralBackV3(e);
-      }
-    }
-
-    // 4. No route entry: close exactly the visible top page. Never close
-    // the page underneath it.
-    closeTop(top);
-    return true;
-  };
-
-  // Registered on window in capture phase so this executes before the old
-  // document-level keyboard controller.
+  // ONE and ONLY ONE ESC listener.
   window.addEventListener('keydown',function(e){
     if(e.key!=='Escape') return;
-    if(e.__smartshopCentralV3) return;
-    window.smartshopCentralBackV3(e);
+    if(e.__smartshopCentralV4) return;
+    back(e);
   },true);
 })();
 </script>

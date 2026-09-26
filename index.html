@@ -997,8 +997,7 @@ body{background:#edf2f8!important;color:var(--modern-text);}
         .field-box{width:100%!important;min-width:0!important;}
         .field-box input,.field-box select,.field-box textarea{width:100%!important;}
         .item-search-box{min-height:46px!important;font-size:16px!important;padding:11px 12px!important;position:sticky;top:0;z-index:5;background:#fff;}
-        .photo-preview-box{width:86px!important;height:86px!important;}        /* Item Master / Item Create */
-        #modal-saved-items .modal-content,#modal-create-item .modal-content{height:92dvh!important;}
+        .photo-preview-box{width:86px!important;height:86px!important;}        /* Item Master / Item Create */        #modal-saved-items .modal-content,#modal-create-item .modal-content{height:92dvh!important;}
         #modal-saved-items .modal-body,#modal-create-item .modal-body{padding:10px!important;}
         #modal-create-item .modal-body>div:first-child{padding:10px!important;}
         #modal-create-item .modal-body>div:first-child>div:first-child{display:grid!important;grid-template-columns:1fr 1fr!important;gap:9px!important;}
@@ -1997,8 +1996,7 @@ button,input,select,textarea{touch-action:manipulation;}
                     </thead>
                     <tbody id="b-list-add-tbody"></tbody>                </table>
             </div>        </div>
-    </div>
-</div>
+    </div></div>
 
 <div class="modal" id="modal-customers">
     <div class="modal-content" style="max-width: 900px;">
@@ -2997,8 +2995,7 @@ button,input,select,textarea{touch-action:manipulation;}
             // ESC must close this popup immediately and leave the bill open.
             const paymentPopupEsc = document.getElementById('modal-payment-popup');            if (paymentPopupEsc?.classList.contains('active')) {
                 hideModal('modal-payment-popup');
-                return;
-            }
+                return;            }
 
             // Barcode popup is on top. ESC must close only the barcode popup
             // and return focus to the Item Master / Item Picker row that opened it.
@@ -3690,18 +3687,6 @@ button,input,select,textarea{touch-action:manipulation;}
         const modal = document.getElementById(id);
         if (!modal) return;
 
-        // WAITING BILLS is a blocking gate. While any waiting bill exists,
-        // P09 must not close through ESC, X, mouse or generic modal handling.
-        // This prevents its return trail from restoring the Main Page early.
-        if (id === 'modal-waiting-bills' &&
-            typeof waitingBillsStrictMode !== 'undefined' &&
-            waitingBillsStrictMode &&
-            Array.isArray(billTabs) && billTabs.length > 0) {
-            renderWaitingBillsPopup();
-            setTimeout(() => updateWaitingBillsPopupSelection(), 0);
-            return;
-        }
-
         // हा modal सर्वात वरचा modal आहे का ते तपासा.
         // Underlying modal hide करताना त्याचा focus जबरदस्तीने बदलू नये.
         const activeModals = Array.from(document.querySelectorAll('.modal.active'));
@@ -3731,101 +3716,39 @@ button,input,select,textarea{touch-action:manipulation;}
     }
 
     function confirmAndCloseBill() {
-        // P02 Item Master is a child of the Bill. Never show the Bill-close
-        // confirmation while P02 is active; ESC must only close P02.
-        const p02ItemMaster = document.getElementById('modal-saved-items');
-        if (p02ItemMaster?.classList.contains('active')) {
-            if (typeof closeItemMasterModal === 'function') {
-                closeItemMasterModal();
-            } else {
-                p02ItemMaster.classList.remove('active');
-            }
-            return;
-        }
-
         if (!confirm("तुम्हाला खरोखर बिल विंडो बंद करायची आहे का? (Yes/No)")) return;
-
-        // Bill History / Item Master History -> Modify -> BN-05 -> ESC -> OK:
-        // this is a cancellation of the edit, so return directly to the
-        // exact Bill Detail page that opened the edit. For Bill History this
-        // is BH-02; for Item Master history this is the corresponding IM
-        // Bill Detail page. Do this before generic tab-close logic so no
-        // other ESC route can take over.
-        if (billEditReturnToDetail &&
-            (billEditReturnToDetail.returnSource === 'bill-history' ||
-             billEditReturnToDetail.returnSource === 'item-history') &&
-            typeof returnFromEditedBillToDetail === 'function') {
-            if (returnFromEditedBillToDetail()) {
-                persistData();
-                return;
-            }
-        }
-
-        // Closing a Bill must never reopen Item Master or restore its old focus.
-        itemMasterBillRowIndex = null;
-        const itemMasterModal = document.getElementById('modal-saved-items');
-        if (itemMasterModal) itemMasterModal.classList.remove('active');
-        if (typeof modalFocusReturn !== 'undefined') {
-            modalFocusReturn.delete('modal-saved-items');
-        }
 
         if (!activeTabId) {
             hideModal('modal-bill');
-            setTimeout(() => focusMainNewBill(), 50);
             return;
         }
 
         const tabIndex = billTabs.findIndex(t => t.id === activeTabId);
         const tab = tabIndex >= 0 ? billTabs[tabIndex] : null;
 
-        // Bill numbers are assigned when a new bill is created and are never
-        // rolled back when a bill is cancelled/closed.
-        if (tabIndex >= 0) billTabs.splice(tabIndex, 1);
+        // A bill number is reserved when a new tab opens. If this discarded
+        // bill used the latest reserved number, release that number so the
+        // next new bill gets the same serial again.
+        if (tab && !tab.isEditingExisting) {
+            const m = String(tab.billNo || '').match(/^#(\d+)$/);
+            const tabSeq = m ? parseInt(m[1], 10) : NaN;
+            if (!Number.isNaN(tabSeq) && nextBillSeq === tabSeq + 1) {
+                nextBillSeq = tabSeq;
+            }
+        }
 
+        if (tabIndex >= 0) billTabs.splice(tabIndex, 1);
         activeTabId = billTabs.length ? billTabs[billTabs.length - 1].id : null;
 
         persistData();
         renderBillTabsBar();
 
-        // Waiting Bills source logic: while strict P09 mode is active, one
-        // closed bill must never restore P08 or an older return trail. Keep
-        // the user inside P09 until every waiting bill is cleared.
-        if (waitingBillsStrictMode) {
-            if (billTabs.length > 0) {
-                activeTabId = null;
-                const billModal = document.getElementById('modal-bill');
-                if (billModal) billModal.classList.remove('active');
-                modalStack = modalStack.filter(id => id !== 'modal-bill');
-                refreshModalStack();
-                openWaitingBillsPopup();
-                return;
-            }
-            waitingBillsStrictMode = false;
-        }
-
-        const returnEntry=pageReturnStack.length?pageReturnStack[pageReturnStack.length-1]:null;
-        if (returnEntry && returnEntry.childModalId === 'modal-bill') {
-            pageReturnStack.pop();
-            hideModal('modal-bill');
-            setTimeout(()=>restorePageReturn(returnEntry),80);
-            return;
-        }
-
         if (activeTabId) {
-            // STRICT WAITING-BILL RULE:
-            // Closing/cancelling one bill must not expose P08 while any other
-            // waiting bill still exists. Route to P09 until all are cleared.
-            const billModal = document.getElementById('modal-bill');
-            if (billModal) billModal.classList.remove('active');
-            modalStack = modalStack.filter(id => id !== 'modal-bill');
-            refreshModalStack();
-            openWaitingBillsPopup();
+            switchBillTab(activeTabId);
         } else {
             hideModal('modal-bill');
-            setTimeout(() => focusMainNewBill(), 50);
         }
     }
-
     function persistData() {
         localStorage.setItem('ss_next_seq', nextBillSeq);
         localStorage.setItem('ss_master_items', JSON.stringify(masterItems));
@@ -3897,7 +3820,7 @@ button,input,select,textarea{touch-action:manipulation;}
         if (existingBillData) {
             newBill = existingBillData;
         } else {
-            const billNo = "#" + getNextLockedBillNumber();
+            const billNo = "#" + nextBillSeq++;
             newBill = {
                 id: 'bill_' + Date.now(),
                 billNo: billNo,
@@ -3920,17 +3843,14 @@ button,input,select,textarea{touch-action:manipulation;}
         renderBillTabsBar();
         showModal('modal-bill');
         
-        // New Bill always starts with the cursor on Item Name.
         setTimeout(() => {
-            const billModal = document.getElementById('modal-bill');
             const firstItemInput = document.getElementById('row-name-0');
-            if (billModal?.classList.contains('active') && firstItemInput) {
+            if (firstItemInput) {
                 firstItemInput.focus();
                 firstItemInput.select();
             }
-        }, 300);
+        }, 150);
     }
-
     function renderBillTabsBar() {
         const container = document.getElementById('active-bills-tabs');
         container.innerHTML = '';
@@ -3964,7 +3884,6 @@ button,input,select,textarea{touch-action:manipulation;}
 
         prepareKeyboardTargets(container);
     }
-
     function switchBillTab(tabId, openModalWindow = true) {
         autoSaveCurrentTab();
 
@@ -3972,9 +3891,7 @@ button,input,select,textarea{touch-action:manipulation;}
         const tab = billTabs.find(t => t.id === activeTabId);
         if (!tab) return;
 
-        window.smartShopSetPageTitle('bill-modal-title', tab.isEditingExisting ? `संपादन: ${tab.billNo}` : `नवीन बिल: (${tab.billNo})`, tab.isEditingExisting ? 'P22' : 'P08');
-        const billPayBtn = document.getElementById('bill-pay-show-btn');
-        if (billPayBtn) billPayBtn.textContent = tab.isEditingExisting ? '💾 Save & Pay' : 'Pay and Show';
+        document.getElementById('bill-modal-title').innerHTML = tab.isEditingExisting ? `संपादन: ${tab.billNo}` : `नवीन बिल: (${tab.billNo})`;
         
         document.getElementById('bill-no').value = tab.billNo;
         document.getElementById('cust-name').value = tab.custName || '';
@@ -4004,27 +3921,12 @@ button,input,select,textarea{touch-action:manipulation;}
             }, 150);
         }
     }
-
     function closeBillTab(tabId, e) {
         if(e) e.stopPropagation();
-        // Waiting Bills source logic: clicking the X on an individual waiting
-        // bill must use the same Yes/No confirmation as ESC. Never remove the
-        // bill before confirmation.
-        if (waitingBillsStrictMode && e && billTabs.some(t => t.id === tabId)) {
-            switchBillTab(tabId);
-            confirmAndCloseBill();
-            return;
-        }
-
         billTabs = billTabs.filter(t => t.id !== tabId);
         if (activeTabId === tabId) {
             if (billTabs.length > 0) {
-                activeTabId = null;
-                const billModal = document.getElementById('modal-bill');
-                if (billModal) billModal.classList.remove('active');
-                modalStack = modalStack.filter(id => id !== 'modal-bill');
-                refreshModalStack();
-                openWaitingBillsPopup();
+                switchBillTab(billTabs[billTabs.length - 1].id);
             } else {
                 hideModal('modal-bill');
                 activeTabId = null;
@@ -4033,7 +3935,6 @@ button,input,select,textarea{touch-action:manipulation;}
         renderBillTabsBar();
         persistData();
     }
-
     function autoSaveCurrentTab() {
         if (!activeTabId) return;
         const tab = billTabs.find(t => t.id === activeTabId);
@@ -4997,8 +4898,7 @@ button,input,select,textarea{touch-action:manipulation;}
                 // Numpad Plus / keyboard Plus: open Barcode Popup for THIS focused item.
                 if (e.key === '+' || e.code === 'NumpadAdd' || e.keyCode === 107 ||
                     (e.shiftKey && (e.key === '=' || e.keyCode === 187))) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                    e.preventDefault();                    e.stopPropagation();
                     openBarcodePrintForItem(item.id);
                     return;
                 }
@@ -5998,7 +5898,6 @@ button,input,select,textarea{touch-action:manipulation;}
                 });
             }
         }
-
         setTimeout(() => {
             const rows = Array.from(document.querySelectorAll('#modal-item-history .item-history-row'));
             const row = rows.find(r => Number(r.dataset.historyIdx) === Number(ctx.historyIdx));
@@ -7003,6 +6902,7 @@ button,input,select,textarea{touch-action:manipulation;}
 
         count.textContent = `एकूण Waiting Bills : ${billTabs.length}`;
         list.innerHTML = '';
+
         if (billTabs.length === 0) {
             const empty = document.createElement('div');
             empty.className = 'waiting-bills-popup-empty';
@@ -7019,11 +6919,11 @@ button,input,select,textarea{touch-action:manipulation;}
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'waiting-bill-popup-item' + (index === waitingBillsPopupIndex ? ' selected' : '');
-            btn.textContent = `Waiting Bill ${index + 1} — ${tab.billNo} (${tab.custName || 'New'})`;            btn.onclick = () => selectWaitingBillFromPopup(index);
+            btn.textContent = `Waiting Bill ${index + 1} — ${tab.billNo} (${tab.custName || 'New'})`;
+            btn.onclick = () => selectWaitingBillFromPopup(index);
             list.appendChild(btn);
         });
     }
-
     function updateWaitingBillsPopupSelection() {
         const list = document.getElementById('waiting-bills-popup-list');
         if (!list) return;
@@ -7040,18 +6940,12 @@ button,input,select,textarea{touch-action:manipulation;}
     }
 
     function openWaitingBillsPopup() {
-        // P09 is the working Waiting Bills gate. Whenever actual waiting
-        // bills exist, keep strict mode active so ESC/X cannot expose P08.
-        if (Array.isArray(billTabs) && billTabs.length > 0) {
-            waitingBillsStrictMode = true;
-        }
         renderWaitingBillsPopup();
         showModal('modal-waiting-bills');
         setTimeout(() => {
             updateWaitingBillsPopupSelection();
         }, 50);
     }
-
     function selectWaitingBillFromPopup(index) {
         waitingBillsPopupIndex = index;
         if (index < 0 || index >= billTabs.length) return;
@@ -7059,25 +6953,10 @@ button,input,select,textarea{touch-action:manipulation;}
         hideModal('modal-waiting-bills');
         switchBillTab(tabId);
     }
-
     function createNewBillFromWaitingPopup() {
-        // Waiting Bills -> New Bill:
-        // Close only the Waiting Bills popup itself. Do NOT call hideModal()
-        // here because hideModal() restores its parent P08 immediately.
-        // The newly-created third bill must remain the active child of P08
-        // until that bill is actually Cancelled/Closed or Saved.
-        const waitingModal = document.getElementById('modal-waiting-bills');
-        if (waitingModal) waitingModal.classList.remove('active');
-        modalStack = modalStack.filter(id => id !== 'modal-waiting-bills');
-        refreshModalStack();
-        pageReturnStack = pageReturnStack.filter(entry =>
-            entry.modalId !== 'modal-waiting-bills' &&
-            entry.childModalId !== 'modal-waiting-bills'
-        );
-
+        hideModal('modal-waiting-bills');
         createNewBillTab();
     }
-
     function handleWaitingBillsPopupKeyboard(e) {
         const popup = document.getElementById('modal-waiting-bills');
         if (!popup || !popup.classList.contains('active')) return;
@@ -7097,14 +6976,6 @@ button,input,select,textarea{touch-action:manipulation;}
             e.preventDefault();
             if (waitingBillsPopupIndex < billTabs.length) {
                 selectWaitingBillFromPopup(waitingBillsPopupIndex);
-            } else {
-                createNewBillFromWaitingPopup();
-            }
-        }
-    }
-
-
-
 /* ===== PC WINDOW CONTROLS JS ===== */
 (function(){
   const root=document.documentElement;

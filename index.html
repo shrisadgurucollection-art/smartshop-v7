@@ -5070,6 +5070,11 @@ button,input,select,textarea{touch-action:manipulation;}
     }
 
     function openPaymentPopup() {
+        // The Payment & Save popup is a single existing modal. If an
+        // event/handler reaches this function twice, do not create a
+        // duplicate return-trail entry or reopen the same popup.
+        const paymentModal = document.getElementById('modal-payment-popup');
+        if (paymentModal?.classList.contains('active')) return;
         if (!activeTabId) return;
         autoSaveCurrentTab();
         const tab = billTabs.find(t => t.id === activeTabId);
@@ -5756,6 +5761,13 @@ button,input,select,textarea{touch-action:manipulation;}
         const ctx = billEditReturnToDetail;
         billEditReturnToDetail = null;
 
+        // P22 was consumed. Remove any stale P22/P10 return trail before
+        // reopening P12, so P11 can never restore the old editable Bill.
+        pageReturnStack = pageReturnStack.filter(t =>
+            !['modal-bill','modal-payment-popup'].includes(t.modalId) &&
+            !['modal-bill','modal-payment-popup'].includes(t.childModalId)
+        );
+
         const tabId = activeTabId;
         if (tabId) {
             billTabs = billTabs.filter(t => t.id !== tabId);
@@ -5813,7 +5825,11 @@ button,input,select,textarea{touch-action:manipulation;}
         // only valid reverse step is P11 -> M12.
         pageReturnStack = pageReturnStack.filter(t =>
             t.modalId !== 'modal-bill-detail' &&
-            t.childModalId !== 'modal-bill-detail'
+            t.childModalId !== 'modal-bill-detail' &&
+            t.modalId !== 'modal-bill' &&
+            t.childModalId !== 'modal-bill' &&
+            t.modalId !== 'modal-payment-popup' &&
+            t.childModalId !== 'modal-payment-popup'
         );
 
         // Re-render the existing Bill History list without resetting its filters.

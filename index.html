@@ -7439,14 +7439,45 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
        * selected bill/item information that a generic close must preserve.
        */
       if(m.id==='modal-bill-detail'){
-        if(typeof window.returnFromBillDetailToHistory==='function' &&
-           window.billHistoryReturnContext){
+        // These contexts are top-level lexical variables in index.html,
+        // not window properties. Use the actual route state so P12 can
+        // return to the exact P11/Item-History parent.
+        if(typeof billHistoryReturnContext !== 'undefined' &&
+           billHistoryReturnContext &&
+           typeof window.returnFromBillDetailToHistory==='function'){
           return !!window.returnFromBillDetailToHistory();
         }
-        if(typeof window.returnFromBillDetailToItemHistory==='function' &&
-           window.itemHistoryBillContext){
+        if(typeof itemHistoryBillContext !== 'undefined' &&
+           itemHistoryBillContext &&
+           typeof window.returnFromBillDetailToItemHistory==='function'){
           return !!window.returnFromBillDetailToItemHistory();
         }
+      }
+
+      // Explicit Bill History route: after P12 -> P11, the next ESC is
+      // P11 -> M12. This route is intentionally independent of the
+      // generic modal stack because the Modify workflow consumes that stack.
+      if(m.id==='modal-history' &&
+         typeof billHistoryReturnToM12Only !== 'undefined' &&
+         billHistoryReturnToM12Only){
+        const history = get('modal-history');
+        if(history) history.classList.remove('active');
+        if(Array.isArray(window.modalStack)){
+          window.modalStack = window.modalStack.filter(id=>id!=='modal-history');
+        }
+        billHistoryReturnToM12Only = false;
+        billHistoryOpenedFromM12 = false;
+        if(typeof window.refreshModalStack==='function') window.refreshModalStack();
+        const main = get('main-bill-list');
+        if(main){
+          main.classList.remove('selected');
+          setTimeout(()=>{
+            if(typeof window.focusKeyboardControl==='function') window.focusKeyboardControl(main);
+            else main.focus?.({preventScroll:true});
+            main.classList.add('selected');
+          },40);
+        }
+        return true;
       }
 
       if(m.id==='modal-bill' &&

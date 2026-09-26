@@ -70,7 +70,7 @@
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.65); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         /* Bill -> Item Master: keep the item-selection window above the Bill modal. */
-        #modal-saved-items.active { z-index: 1100; }
+        #modal-saved-items.active { z-index: 1550 !important; }
         /* Item Edit must stay visible above Item Master when Enter opens it. */
         #modal-create-item.active { z-index: 1200 !important; }
         /* Item List Upload must stay visible above Item Master / Item Create. */

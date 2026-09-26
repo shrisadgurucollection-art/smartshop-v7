@@ -7643,4 +7643,97 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
   window.addEventListener('load',()=>setTimeout(scan,50));
 })();
 </script>
+
+<script id="smartshop-central-navigation-v1">
+/*
+ * SMARTSHOP CENTRAL NAVIGATION V1
+ * Safe layer: uses the existing pageReturnStack/modalStack instead of
+ * replacing existing keyboard/button handlers.
+ *
+ * Rules:
+ * 1. Every modal transition is represented by one return-trail entry.
+ * 2. Back/ESC means exactly one route step.
+ * 3. Focus restoration stays with the existing restorePageReturn helpers.
+ * 4. Existing special Bill/Item-History workflows remain authoritative.
+ */
+(function(){
+  'use strict';
+
+  const CN = window.SmartShopCentralNavigation = {
+    version: '1.0',
+    get trail(){
+      try { return window.smartshopGetPageReturnStack?.() || []; } catch(_) { return []; }
+    },
+    get modalStack(){
+      try { return Array.isArray(window.modalStack) ? window.modalStack : []; } catch(_) { return []; }
+    },
+    activeModal(){
+      const stack = this.modalStack;
+      for(let i=stack.length-1;i>=0;i--){
+        const el=document.getElementById(stack[i]);
+        if(el?.classList.contains('active')) return el;
+      }
+      const all=[...document.querySelectorAll('.modal.active')];
+      return all.length ? all[all.length-1] : null;
+    },
+    current(){
+      const m=this.activeModal();
+      if(m) return {type:'modal', id:m.id};
+      return {type:'main', id:'__main-page__'};
+    },
+    canGoBack(){
+      const m=this.activeModal();
+      if(m && this.trail.length) {
+        const t=this.trail[this.trail.length-1];
+        return !!t && t.childModalId===m.id;
+      }
+      return false;
+    },
+    back(){
+      const m=this.activeModal();
+      if(!m) return false;
+
+      /*
+       * Do not duplicate or replace the application's existing exact
+       * Bill/Edit/Item-History rules. Those functions already contain
+       * business-specific return destinations.
+       */
+      if(m.id==='modal-bill' && typeof window.confirmAndCloseBill==='function'){
+        window.confirmAndCloseBill();
+        return true;
+      }
+      if(m.id==='modal-item-history' && typeof window.closeItemHistoryPopup==='function'){
+        window.closeItemHistoryPopup();
+        return true;
+      }
+      if(m.id==='modal-saved-items' && typeof window.closeItemMasterModal==='function'){
+        window.closeItemMasterModal();
+        return true;
+      }
+      if(typeof window.hideModal==='function'){
+        window.hideModal(m.id);
+        return true;
+      }
+      return false;
+    },
+    snapshot(){
+      return {
+        version:this.version,
+        current:this.current(),
+        trailDepth:this.trail.length,
+        trail:this.trail.map(t=>({
+          modalId:t.modalId,
+          childModalId:t.childModalId,
+          focusInfo:t.focusInfo || null
+        })),
+        modalStack:[...this.modalStack]
+      };
+    }
+  };
+
+  // Keep the central state observable without changing any existing UI event.
+  window.smartShopGetNavigationState = function(){ return CN.snapshot(); };
+})();
+</script>
+
 </html>

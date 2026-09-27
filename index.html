@@ -1350,7 +1350,7 @@ button,input,select,textarea{touch-action:manipulation;}
             <div class="modern-nav-item" role="button" tabindex="0" onclick="openSavedItemsModal()"><span class="modern-nav-icon">▤</span><span class="modern-nav-label">स्टॉक & अपडेट<span class="smartshop-main-icon-code" data-main-icon-code="M04">M04</span></span></div>
             <div class="modern-nav-item" role="button" tabindex="0" onclick="openHistoryModal()"><span class="modern-nav-icon">▤</span><span class="modern-nav-label">बिल हिस्ट्री<span class="smartshop-main-icon-code" data-main-icon-code="M05">M05</span></span></div>
             <div class="modern-nav-item" role="button" tabindex="0" onclick="openCustomersModal()"><span class="modern-nav-icon">♧</span><span class="modern-nav-label">ग्राहक यादी<span class="smartshop-main-icon-code" data-main-icon-code="M06">M06</span></span></div>
-            <div class="modern-nav-item" role="button" tabindex="0" onclick="openCustomersModal()"><span class="modern-nav-icon">₹</span><span class="modern-nav-label">दैनिक जमा<span class="smartshop-main-icon-code" data-main-icon-code="M07">M07</span></span></div>
+            <div class="modern-nav-item" role="button" tabindex="0" onclick="openCustomersModal()"><span class="modern-nav-icon"></span><span class="modern-nav-label">दैनिक जमा<span class="smartshop-main-icon-code" data-main-icon-code="M07">M07</span></span></div>
             <div class="modern-nav-item" role="button" tabindex="0" onclick="openHistoryModal()"><span class="modern-nav-icon">UPI</span><span class="modern-nav-label">ऑनलाइन (UPI)<span class="smartshop-main-icon-code" data-main-icon-code="M08">M08</span></span></div>
             <div class="modern-nav-item" role="button" tabindex="0" onclick="openReportsModal()"><span class="modern-nav-icon">▥</span><span class="modern-nav-label">रिपोर्ट्स<span class="smartshop-main-icon-code" data-main-icon-code="M09">M09</span></span></div>
             <div class="modern-nav-item" role="button" tabindex="0" onclick="openSettingsModal()"><span class="modern-nav-icon">⚙</span><span class="modern-nav-label">सेटिंग<span class="smartshop-main-icon-code" data-main-icon-code="M10">M10</span></span></div>
@@ -1437,9 +1437,9 @@ button,input,select,textarea{touch-action:manipulation;}
             <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:8px;">
                 <div style="display:grid; grid-template-columns: 1.6fr 1fr 1.15fr 1fr 1fr 1.35fr; gap:10px; align-items:end;">
                     <div class="field-box" style="flex-direction:column; align-items:flex-start;"><label>आयटम नाव:</label><input type="text" id="create-item-name" placeholder="उदा. Shirt, Pant" data-create-nav="1"></div>
-                    <div class="field-box" style="flex-direction:column; align-items:flex-start;"><label>Cost ₹:</label><input type="number" id="create-item-cost" data-create-nav="2"></div>
+                    <div class="field-box" style="flex-direction:column; align-items:flex-start;"><label>Cost :</label><input type="number" id="create-item-cost" data-create-nav="2"></div>
                     <div class="field-box" style="flex-direction:column; align-items:flex-start;"><label>डिझाईन नंबर:</label><input type="text" id="create-item-design" placeholder="उदा. D101" data-create-nav="3"></div>
-                    <div class="field-box" style="flex-direction:column; align-items:flex-start;"><label>MRP ₹:</label><input type="number" id="create-item-mrp" data-create-nav="4"></div>
+                    <div class="field-box" style="flex-direction:column; align-items:flex-start;"><label>MRP :</label><input type="number" id="create-item-mrp" data-create-nav="4"></div>
                     <div class="field-box" style="flex-direction:column; align-items:flex-start;"><label>स्टॉक:</label><input type="number" id="create-item-stock" data-create-nav="5"></div>
                     <div class="field-box" style="flex-direction:column; align-items:flex-start;"><label>बारकोड नंबर:</label><input type="text" id="create-item-barcode" placeholder="उदा. 1010" data-create-nav="6"></div>
                 </div>
@@ -1590,9 +1590,9 @@ button,input,select,textarea{touch-action:manipulation;}
         </div>
         <div class="item-settings-grid">
           <div class="item-setting-box"><label>GST %</label><select id="import-gst-percent"><option value="5">5%</option><option value="8">8%</option><option value="20">20%</option><option value="0">0%</option></select><div class="item-setting-hint">Rate + GST</div></div>
-          <div class="item-setting-box"><label>Transport (₹)</label><input id="import-transport-charge" type="number" min="0" step="0.01" value="5"><div class="item-setting-hint">+ Transport</div></div>
+          <div class="item-setting-box"><label>Transport ()</label><input id="import-transport-charge" type="number" min="0" step="0.01" value="5"><div class="item-setting-hint">+ Transport</div></div>
           <div class="item-setting-box"><label>Design No. ×</label><input id="import-design-multiplier" type="number" min="0" step="0.01" value="2.25"><div class="item-setting-hint">Cost × Multiplier (Round)</div></div>
-          <div class="item-setting-box"><label>MRP Markup %</label><select id="import-mrp-markup"><option value="10">10%</option><option value="5">5%</option><option value="15">15%</option><option value="20">20%</option><option value="0">0%</option></select><div class="item-setting-hint">MRP + % (Round to next ₹5)</div></div>
+          <div class="item-setting-box"><label>MRP Markup %</label><select id="import-mrp-markup"><option value="10">10%</option><option value="5">5%</option><option value="15">15%</option><option value="20">20%</option><option value="0">0%</option></select><div class="item-setting-hint">MRP + % (Round to next 5)</div></div>
           <button type="button" class="item-setting-apply" onclick="applyImportedPricingSettings()">Apply</button>
         </div>
       </div>
@@ -1815,9 +1815,9 @@ button,input,select,textarea{touch-action:manipulation;}
                         <tr>
                             <th>आयटमचे नाव (Item Name) [Enter दबा - आयटम यादी उघडा]</th>
                             <th style="width: 100px;">नग (Qty)</th>
-                            <th style="width: 120px;">MRP ₹</th>
+                            <th style="width: 120px;">MRP </th>
                             <th style="width: 170px;">डिस्काउंट नंतरची किंमत<br>(Discounted Price)</th>
-                            <th style="width: 150px;">एकूण ₹ (Total)</th>
+                            <th style="width: 150px;">एकूण  (Total)</th>
                             <th style="width: 50px; text-align: center;">कट</th>
                         </tr>
                     </thead>
@@ -1827,8 +1827,8 @@ button,input,select,textarea{touch-action:manipulation;}
 
             <div class="bill-total-bar">
                 <span>एकूण नग (Qty): <b id="bill-total-qty-display" style="color:#ffcc00; font-size:16px;">0</b></span>
-                <span id="bill-summary-discount" class="bill-summary-discount">एकूण रक्कम: ₹ 0</span>
-                <span>एकूण बिल (Gross Total): <b id="bill-gross-total-display" style="color:#ffcc00; font-size:18px;">₹ 0</b></span>
+                <span id="bill-summary-discount" class="bill-summary-discount">एकूण रक्कम:  0</span>
+                <span>एकूण बिल (Gross Total): <b id="bill-gross-total-display" style="color:#ffcc00; font-size:18px;"> 0</b></span>
             </div>
 
             <div class="discount-section">
@@ -1875,12 +1875,12 @@ button,input,select,textarea{touch-action:manipulation;}
             <div class="payment-card">
                 <div class="pay-row" style="font-size:14px; font-weight:bold;">
                     <span>एकूण रक्कम (Gross Total):</span>
-                    <strong id="pop-total-bill" style="color:#0b2545;">₹ 0</strong>
+                    <strong id="pop-total-bill" style="color:#0b2545;"> 0</strong>
                 </div>
 
                 <div class="pay-row" style="color:#dc2626; font-weight:bold;">
                     <span>सूट (Discount):</span>
-                    <strong id="pop-discount-amt">₹ 0</strong>
+                    <strong id="pop-discount-amt"> 0</strong>
                 </div>
 
                 <div class="form-group-inline" style="margin:8px 0; display:flex; align-items:center; gap:8px;">
@@ -1890,12 +1890,12 @@ button,input,select,textarea{touch-action:manipulation;}
 
                 <div class="pay-row highlight">
                     <span>अंतिम देय बिल (Final Pay):</span>
-                    <strong id="pop-final-bill">₹ 0</strong>
+                    <strong id="pop-final-bill"> 0</strong>
                 </div>
 
                 <div class="pay-row" style="color:#dc2626; font-weight:bold;">
                     <span>बाकी उधारी (Pending Udhari):</span>
-                    <strong id="pop-pending-udhari">₹ 0</strong>
+                    <strong id="pop-pending-udhari"> 0</strong>
                 </div>
 
                 <div class="print-checkbox-container">
@@ -1930,7 +1930,7 @@ button,input,select,textarea{touch-action:manipulation;}
                     <tbody id="history-table-tbody"></tbody>
                 </table>
             </div>
-            <div class="history-summary-bar"><span>एकूण बिले : <b id="history-total-bills">0</b></span><span>|</span><span>एकूण विक्री : <b id="history-total-sales">₹0</b></span></div>
+            <div class="history-summary-bar"><span>एकूण बिले : <b id="history-total-bills">0</b></span><span>|</span><span>एकूण विक्री : <b id="history-total-sales">0</b></span></div>
         </div>
     </div>
 </div>
@@ -1963,7 +1963,7 @@ button,input,select,textarea{touch-action:manipulation;}
                         <div class="barcode-item-details">
                             <div class="barcode-item-detail-row"><span class="label">आयटम नाव</span><span>:</span><span class="value" id="item-save-preview-name">-</span></div>
                             <div class="barcode-item-detail-row"><span class="label">डिझाईन नंबर</span><span>:</span><span class="value" id="item-save-preview-design-no">-</span></div>
-                            <div class="barcode-item-detail-row"><span class="label">MRP</span><span>:</span><span class="value mrp-value" id="item-save-preview-mrp">₹0</span></div>
+                            <div class="barcode-item-detail-row"><span class="label">MRP</span><span>:</span><span class="value mrp-value" id="item-save-preview-mrp">0</span></div>
                         </div>
                     </div>
                     <div class="barcode-print-controls">
@@ -2105,37 +2105,37 @@ button,input,select,textarea{touch-action:manipulation;}
             <div class="report-summary-title">📊 आजची एकूण विक्री</div>
             <div class="report-summary-grid">
                 <div id="main-total-sales" class="modern-stat-card modern-green stat-card" tabindex="0" role="button" aria-label="एकूण विक्री" onclick="openHistoryFromReport()">
-                    <div class="modern-stat-top"><div class="modern-stat-icon">₹</div><div class="modern-stat-label">एकूण विक्री</div></div>
-                    <div class="modern-stat-value" id="dash-total">₹ 0</div>
+                    <div class="modern-stat-top"><div class="modern-stat-icon"></div><div class="modern-stat-label">एकूण विक्री</div></div>
+                    <div class="modern-stat-value" id="dash-total"> 0</div>
                     <div class="modern-stat-note">आजची एकूण विक्री</div>
                     <div class="modern-spark"><svg viewBox="0 0 200 30" preserveAspectRatio="none"><polyline points="0,25 25,20 48,23 70,14 92,18 115,9 138,15 160,5 180,10 200,2" fill="none" stroke="currentColor" stroke-width="3"/></svg></div>
                 </div>
                 <div id="main-online" class="modern-stat-card modern-blue stat-card" tabindex="0" role="button" aria-label="Online पेमेंट" onclick="openHistoryFromReport('ONLINE')">
                     <div class="modern-stat-top"><div class="modern-stat-icon">UPI</div><div class="modern-stat-label">Online (UPI)</div></div>
-                    <div class="modern-stat-value" id="dash-online">₹ 0</div>
+                    <div class="modern-stat-value" id="dash-online"> 0</div>
                     <div class="modern-stat-note">आजची ऑनलाइन रक्कम</div>
                     <div class="modern-spark"><svg viewBox="0 0 200 30" preserveAspectRatio="none"><polyline points="0,24 22,21 42,25 64,16 86,19 110,11 132,14 155,7 177,12 200,3" fill="none" stroke="currentColor" stroke-width="3"/></svg></div>
                 </div>
                 <div id="main-cash" class="modern-stat-card modern-orange stat-card" tabindex="0" role="button" aria-label="Cash बिल" onclick="openHistoryFromReport('CASH')">
-                    <div class="modern-stat-top"><div class="modern-stat-icon">₹</div><div class="modern-stat-label">Cash जमा</div></div>
-                    <div class="modern-stat-value" id="dash-cash">₹ 0</div>
+                    <div class="modern-stat-top"><div class="modern-stat-icon"></div><div class="modern-stat-label">Cash जमा</div></div>
+                    <div class="modern-stat-value" id="dash-cash"> 0</div>
                     <div class="modern-stat-note">आजची रोख रक्कम</div>
                     <div class="modern-spark"><svg viewBox="0 0 200 30" preserveAspectRatio="none"><polyline points="0,23 22,18 45,22 68,13 90,17 113,9 137,14 160,6 181,10 200,4" fill="none" stroke="currentColor" stroke-width="3"/></svg></div>
                 </div>
                 <div id="main-udhari" class="modern-stat-card modern-purple stat-card" tabindex="0" role="button" aria-label="उधारी" onclick="openHistoryFromReport()">
                     <div class="modern-stat-top"><div class="modern-stat-icon">⏳</div><div class="modern-stat-label">उधारी / Balance</div></div>
-                    <div class="modern-stat-value" id="dash-udhari">₹ 0</div>
+                    <div class="modern-stat-value" id="dash-udhari"> 0</div>
                     <div class="modern-stat-note">बाकी उधारी रक्कम</div>
                     <div class="modern-spark"><svg viewBox="0 0 200 30" preserveAspectRatio="none"><polyline points="0,24 24,19 48,23 70,15 92,20 115,11 137,16 158,7 181,12 200,4" fill="none" stroke="currentColor" stroke-width="3"/></svg></div>
                 </div>
             </div>
             <div class="payment-card">
                 <div class="pay-row"><span>एकूण बिले संख्या:</span><strong id="rep-count">0</strong></div>
-                <div class="pay-row highlight"><span>एकूण विक्री रक्कम:</span><strong id="rep-total" style="color:#16a34a;">₹ 0</strong></div>
-                <div class="pay-row"><span>Online Payment:</span><strong id="rep-online" style="color:#0284c7;">₹ 0</strong></div>
-                <div class="pay-row"><span>Cash Payment:</span><strong id="rep-cash" style="color:#ea580c;">₹ 0</strong></div>
-                <div class="pay-row"><span>उधारी (Pending Balance):</span><strong id="rep-udhari" style="color:#dc2626;">₹ 0</strong></div>
-                <div class="pay-row"><span>एकूण दिलेली सूट:</span><strong id="rep-discount" style="color:#dc2626;">₹ 0</strong></div>
+                <div class="pay-row highlight"><span>एकूण विक्री रक्कम:</span><strong id="rep-total" style="color:#16a34a;"> 0</strong></div>
+                <div class="pay-row"><span>Online Payment:</span><strong id="rep-online" style="color:#0284c7;"> 0</strong></div>
+                <div class="pay-row"><span>Cash Payment:</span><strong id="rep-cash" style="color:#ea580c;"> 0</strong></div>
+                <div class="pay-row"><span>उधारी (Pending Balance):</span><strong id="rep-udhari" style="color:#dc2626;"> 0</strong></div>
+                <div class="pay-row"><span>एकूण दिलेली सूट:</span><strong id="rep-discount" style="color:#dc2626;"> 0</strong></div>
             </div>
             <button class="btn btn-wa-blue" onclick="shareDailyReportWhatsApp()">📲 WhatsApp वर रिपोर्ट पाठवा</button>
         </div>
@@ -2497,8 +2497,8 @@ button,input,select,textarea{touch-action:manipulation;}
 
         const totalMrpEl = document.getElementById('item-cost-total-mrp');
         const actualCostEl = document.getElementById('item-cost-actual-cost');
-        if (totalMrpEl) totalMrpEl.innerText = `₹ ${totalMrp.toFixed(0)}`;
-        if (actualCostEl) actualCostEl.innerText = `₹ ${actualCost.toFixed(2)}`;
+        if (totalMrpEl) totalMrpEl.innerText = ` ${totalMrp.toFixed(0)}`;
+        if (actualCostEl) actualCostEl.innerText = ` ${actualCost.toFixed(2)}`;
         showModal('modal-item-cost-popup');
     }
 
@@ -3855,7 +3855,7 @@ button,input,select,textarea{touch-action:manipulation;}
         const tabIndex = billTabs.findIndex(t => t.id === activeTabId);
         const tab = tabIndex >= 0 ? billTabs[tabIndex] : null;
 
-        // An empty/₹0 bill is never a Waiting Bill.
+        // An empty/0 bill is never a Waiting Bill.
         // Remove it silently on close so it cannot remain as a phantom Waiting tab.
         if (tab && !isRealWaitingBill(tab)) {
             if (tabIndex >= 0) billTabs.splice(tabIndex, 1);
@@ -3948,7 +3948,7 @@ button,input,select,textarea{touch-action:manipulation;}
             if (!Number.isFinite(n) || assigned.has(n)) {
                 while (used.has(maxSeq) || assigned.has(maxSeq)) maxSeq++;
                 n = maxSeq++;
-                tab.billNo = '#' + n;
+                tab.billNo = String(n);
             }
             assigned.add(n);
         });
@@ -3987,7 +3987,7 @@ button,input,select,textarea{touch-action:manipulation;}
         if (existingBillData) {
             newBill = existingBillData;
         } else {
-            const billNo = "#" + getNextLockedBillNumber();
+            const billNo = String(getNextLockedBillNumber());
             newBill = {
                 id: 'bill_' + Date.now(),
                 billNo: billNo,
@@ -4048,8 +4048,8 @@ button,input,select,textarea{touch-action:manipulation;}
                 chip.className = 'bill-header-waiting-chip';
                 chip.tabIndex = 0;
                 chip.textContent = `Waiting Bill ${String(tab.billNo || '').replace(/^#/, '')}`;
-                chip.title = `Waiting Bill ${tab.billNo}`;
-                chip.setAttribute('aria-label', `Waiting Bill ${tab.billNo}`);
+                chip.title = `Waiting Bill ${String(tab.billNo || "").replace(/^#/, "")}`;
+                chip.setAttribute('aria-label', `Waiting Bill ${String(tab.billNo || "").replace(/^#/, "")}`);
                 chip.onclick = function(e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -4081,10 +4081,10 @@ button,input,select,textarea{touch-action:manipulation;}
                 chip.className = `bill-tab-chip ${tab.id === activeTabId ? 'active' : ''}`;
                 chip.setAttribute('tabindex', '0');
                 chip.setAttribute('role', 'button');
-                chip.setAttribute('aria-label', `बिल ${tab.billNo}`);
+                chip.setAttribute('aria-label', `बिल ${String(tab.billNo || "").replace(/^#/, "")}`);
                 chip.onclick = () => switchBillTab(tab.id);
                 chip.innerHTML = `
-                    <span onclick="switchBillTab('${tab.id}')">${tab.billNo} (${tab.custName || 'New'})</span>
+                    <span onclick="switchBillTab('${tab.id}')">${String(tab.billNo || "").replace(/^#/, "")} (${tab.custName || 'New'})</span>
                     <span class="close-tab" onclick="closeBillTab('${tab.id}', event)">✕</span>
                 `;
                 container.appendChild(chip);
@@ -4114,7 +4114,7 @@ button,input,select,textarea{touch-action:manipulation;}
         const tab = billTabs.find(t => t.id === activeTabId);
         if (!tab) return;
 
-        window.smartShopSetPageTitle('bill-modal-title', tab.isEditingExisting ? `संपादन: ${tab.billNo}` : `नवीन बिल: (${tab.billNo})`, tab.isEditingExisting ? 'P22' : 'P08');
+        window.smartShopSetPageTitle('bill-modal-title', tab.isEditingExisting ? `संपादन: ${String(tab.billNo || "").replace(/^#/, "")}` : `नवीन बिल: (${String(tab.billNo || "").replace(/^#/, "")})`, tab.isEditingExisting ? 'P22' : 'P08');
         const billPayBtn = document.getElementById('bill-pay-show-btn');
         if (billPayBtn) billPayBtn.textContent = tab.isEditingExisting ? '💾 Save & Pay' : 'Pay and Show';
         
@@ -4217,17 +4217,17 @@ button,input,select,textarea{touch-action:manipulation;}
                     </td>
                     <td>
                         <input type="number" id="row-mrp-${index}" value="${item.mrp || ''}" 
-                            placeholder="MRP ₹"
+                            placeholder="MRP "
                             ${item.itemMasterLocked ? 'readonly class="item-master-mrp-locked"' : ''}
                             oninput="updateRowData(${index})" 
                             onkeydown="handleArrowKeyNavigation(event, ${index}, 'mrp')" 
                             style="width:100%; padding:4px; font-weight:bold; border:1px solid #cbd5e1; border-radius:4px;">
                     </td>
                     <td class="discounted-price-cell">
-                        ₹<span id="row-discounted-val-${index}">${discountedUnit.toFixed(0)}</span>
+                        <span id="row-discounted-val-${index}">${discountedUnit.toFixed(0)}</span>
                     </td>
                     <td class="row-total-cell">
-                        ₹<span id="row-total-val-${index}">${discountedTotal.toFixed(0)}</span>
+                        <span id="row-total-val-${index}">${discountedTotal.toFixed(0)}</span>
                     </td>
                     <td style="text-align: center;">
                         <button class="btn-action-sm btn-delete-sm" onclick="deleteBillItem(${index})" title="कट / डिलीट">✕</button>
@@ -4267,7 +4267,7 @@ button,input,select,textarea{touch-action:manipulation;}
         }
 
         document.getElementById('bill-total-qty-display').innerText = totalQty;
-        document.getElementById('bill-gross-total-display').innerText = `₹ ${grossTotal}`;
+        document.getElementById('bill-gross-total-display').innerText = ` ${grossTotal}`;
         recalculateDiscountHint(grossTotal);
     }
 
@@ -4305,7 +4305,7 @@ button,input,select,textarea{touch-action:manipulation;}
         });
 
         document.getElementById('bill-total-qty-display').innerText = grandQty;
-        document.getElementById('bill-gross-total-display').innerText = `₹ ${grandTotal}`;
+        document.getElementById('bill-gross-total-display').innerText = ` ${grandTotal}`;
         recalculateDiscountHint(grandTotal);
         persistData();
     }
@@ -4618,7 +4618,7 @@ button,input,select,textarea{touch-action:manipulation;}
         }
         document.getElementById('item-save-preview-name').textContent = item.name || '-';
         document.getElementById('item-save-preview-design-no').textContent = item.designNo || '-';
-        document.getElementById('item-save-preview-mrp').textContent = `₹${Number(item.mrp || 0).toFixed(0)}`;
+        document.getElementById('item-save-preview-mrp').textContent = `${Number(item.mrp || 0).toFixed(0)}`;
         const qty = document.getElementById('item-save-preview-qty');
         if (qty) qty.value = String(defaultPrintQty);
         const designSelect = document.getElementById('item-save-barcode-design');
@@ -4682,7 +4682,7 @@ button,input,select,textarea{touch-action:manipulation;}
             <div class="barcode-preview-number">${item.barcode || ''}</div>
             <div class="barcode-preview-name">${item.name || ''}</div>
             <div class="barcode-preview-design-no">Design No. : ${item.designNo || '-'}</div>
-            ${design === '1' || design === '2' || design === '3' || design === '4' || design === '5' || design === '6' ? `<div class="barcode-preview-mrp">MRP : ₹${Number(item.mrp || 0).toFixed(0)}</div>` : ''}
+            ${design === '1' || design === '2' || design === '3' || design === '4' || design === '5' || design === '6' ? `<div class="barcode-preview-mrp">MRP : ${Number(item.mrp || 0).toFixed(0)}</div>` : ''}
         `;
         root.innerHTML = '';
         root.appendChild(card);
@@ -4756,7 +4756,7 @@ button,input,select,textarea{touch-action:manipulation;}
             pages += `<div class="barcode-print-page barcode-design-${design}">
                 <div class="barcode-print-shop">श्री सद्गुरू क्रिएशन</div>
                 <div class="barcode-print-name">${item.name || ''}</div>
-                <div class="barcode-print-meta">DN: ${item.designNo || '-'} &nbsp; | &nbsp; MRP: ₹${Number(item.mrp || 0).toFixed(0)}</div>
+                <div class="barcode-print-meta">DN: ${item.designNo || '-'} &nbsp; | &nbsp; MRP: ${Number(item.mrp || 0).toFixed(0)}</div>
                 <svg id="${safeId}" class="barcode-print-svg"></svg>
                 <div class="barcode-print-number">${item.barcode || ''}</div>
                 <div class="barcode-qr-wrap"><div class="barcode-qr" data-barcode-qr="${String(item.barcode || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"></div></div>
@@ -4907,7 +4907,7 @@ button,input,select,textarea{touch-action:manipulation;}
                 '<span><b>Bill ' + (m.bill.billNo || '-') + '</b></span>' +
                 '<span>' + (m.bill.date || '-') + '</span>' +
                 '<span>Qty: ' + m.qty + '</span>' +
-                '<span>₹' + Number(m.bill.finalBill || 0).toFixed(0) + '</span>' +
+                '<span>' + Number(m.bill.finalBill || 0).toFixed(0) + '</span>' +
             '</div>';
         }).join('') : '<div class="item-history-empty">या आयटमची कोणतीही विक्री आढळली नाही.</div>';
 
@@ -5115,9 +5115,9 @@ button,input,select,textarea{touch-action:manipulation;}
             tr.innerHTML = `
                 <td>${photoCell}</td>
                 <td><b>${item.name || '-'}</b></td>
-                <td>₹${Number(item.cost || 0).toFixed(0)}</td>
+                <td>${Number(item.cost || 0).toFixed(0)}</td>
                 <td><b>${item.designNo || '-'}</b></td>
-                <td style="color:#16a34a; font-weight:bold;">₹${Number(item.mrp || 0).toFixed(0)}</td>
+                <td style="color:#16a34a; font-weight:bold;">${Number(item.mrp || 0).toFixed(0)}</td>
                 <td><b>${Number(item.stock || 0)}</b></td>
                 <td><b class="barcode-list-number">${item.barcode || '-'}</b></td>
                 <td>
@@ -5185,16 +5185,16 @@ button,input,select,textarea{touch-action:manipulation;}
             const discVal = (grossTotal * pct) / 100;
             const finalVal = grossTotal - discVal;
             const displayPct = Number(pct).toFixed(2).replace(/\.00$/, '');
-            const textValue = `₹ ${grossTotal} @ ${displayPct}% OFF = ₹ ${discVal.toFixed(0)} सूट (Final Pay: ₹ ${finalVal.toFixed(0)})`;
+            const textValue = ` ${grossTotal} @ ${displayPct}% OFF =  ${discVal.toFixed(0)} सूट (Final Pay:  ${finalVal.toFixed(0)})`;
             if (hintEl) hintEl.innerText = textValue;
-            if (summaryEl) summaryEl.innerHTML = `₹ ${grossTotal} @ ${displayPct}% OFF = <span class="summary-discount-amount">₹ ${discVal.toFixed(0)} सूट</span> (Final Pay: <span class="summary-final-pay">₹ ${finalVal.toFixed(0)}</span>)`;
+            if (summaryEl) summaryEl.innerHTML = ` ${grossTotal} @ ${displayPct}% OFF = <span class="summary-discount-amount"> ${discVal.toFixed(0)} सूट</span> (Final Pay: <span class="summary-final-pay"> ${finalVal.toFixed(0)}</span>)`;
         } else if (grossTotal > 0) {
-            const textValue = `एकूण रक्कम: ₹ ${grossTotal}`;
+            const textValue = `एकूण रक्कम:  ${grossTotal}`;
             if (hintEl) hintEl.innerText = textValue;
             if (summaryEl) summaryEl.innerHTML = textValue;
         } else {
             if (hintEl) hintEl.innerText = `कोणतीही सूट दिलेली नाही`;
-            if (summaryEl) summaryEl.innerText = `एकूण रक्कम: ₹ 0`;
+            if (summaryEl) summaryEl.innerText = `एकूण रक्कम:  0`;
         }
     }
 
@@ -5303,7 +5303,7 @@ button,input,select,textarea{touch-action:manipulation;}
         }
 
         const grossTotal = validItems.reduce((sum, i) => sum + i.total, 0);
-        document.getElementById('pop-total-bill').innerText = `₹ ${grossTotal.toFixed(0)}`;
+        document.getElementById('pop-total-bill').innerText = ` ${grossTotal.toFixed(0)}`;
         document.getElementById('pop-cash-given').value = '';
         document.getElementById('pop-print-checkbox').checked = false;
         calculatePaymentBreakup();
@@ -5332,7 +5332,7 @@ button,input,select,textarea{touch-action:manipulation;}
 
         if (!isNaN(cashGivenVal) && cashGivenVal >= 0 && cashGivenVal <= grossTotal && cashGivenVal < grossTotal) {
             // ग्राहकाने दिलेली कमी रक्कम = discount करून Final Bill.
-            // उदा. Gross ₹1000 + Paid ₹800 => Discount ₹200 + Final ₹800.
+            // उदा. Gross 1000 + Paid 800 => Discount 200 + Final 800.
             discountAmt = grossTotal - cashGivenVal;
             finalBill = cashGivenVal;
         }
@@ -5341,9 +5341,9 @@ button,input,select,textarea{touch-action:manipulation;}
             ? Math.max(0, finalBill - cashGivenVal) : 0;
 
         const discountEl = document.getElementById('pop-discount-amt');
-        if (discountEl) discountEl.innerText = `₹ ${discountAmt.toFixed(0)}`;
-        document.getElementById('pop-final-bill').innerText = `₹ ${finalBill.toFixed(0)}`;
-        document.getElementById('pop-pending-udhari').innerText = `₹ ${pendingVal.toFixed(0)}`;
+        if (discountEl) discountEl.innerText = ` ${discountAmt.toFixed(0)}`;
+        document.getElementById('pop-final-bill').innerText = ` ${finalBill.toFixed(0)}`;
+        document.getElementById('pop-pending-udhari').innerText = ` ${pendingVal.toFixed(0)}`;
     }
 
     function adjustStockForBillItems(items, isRestore = false) {
@@ -5412,7 +5412,7 @@ button,input,select,textarea{touch-action:manipulation;}
             );
             let savedSerial = 101;
             while (usedSavedSerials.has(savedSerial)) savedSerial++;
-            tab.billNo = '#' + savedSerial;
+            tab.billNo = String(savedSerial);
         }
 
         const oldPending = existIndex !== -1 ? (Number(savedBills[existIndex].pendingUdhari) || 0) : 0;
@@ -5828,11 +5828,11 @@ button,input,select,textarea{touch-action:manipulation;}
                 tr.style.cursor = 'pointer';
                 tr.title = 'Enter दाबा — Bill Detail / Edit';
                 tr.innerHTML = `
-                    <td><b style="color:#0b4f8a;">${b.billNo}</b></td>
+                    <td><b style="color:#0b4f8a;">${String(b.billNo || "").replace(/^#/, "")}</b></td>
                     <td>${formatSmartShopBillDate(b.date)}</td>
                     <td>${b.custName}</td>
                     <td>${b.items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)}</td>
-                    <td style="color:#16a34a; font-weight:900;">₹${Number(b.finalBill || 0).toFixed(0)}</td>
+                    <td style="color:#16a34a; font-weight:900;">${Number(b.finalBill || 0).toFixed(0)}</td>
                     <td><span class="badge-mode ${modeBadgeClass}">${b.mode === 'CASH' ? 'Cash' : b.mode === 'ONLINE' ? 'Online' : 'Udhari'}</span></td>
                     <td>${b.audioNote ? `<button type="button" class="history-audio-btn" title="Recording ऐका" aria-label="Recording ऐका">▶</button>` : `<span class="history-audio-missing">—</span>`}</td>
                 `;
@@ -5879,7 +5879,7 @@ button,input,select,textarea{touch-action:manipulation;}
         const totalBillsEl = document.getElementById('history-total-bills');
         const totalSalesEl = document.getElementById('history-total-sales');
         if (totalBillsEl) totalBillsEl.textContent = totalBills;
-        if (totalSalesEl) totalSalesEl.textContent = '₹' + totalSales.toFixed(0);
+        if (totalSalesEl) totalSalesEl.textContent = '' + totalSales.toFixed(0);
     }
 
     function resetHistoryDateFilter() {
@@ -5897,16 +5897,16 @@ button,input,select,textarea{touch-action:manipulation;}
         const realIdx = Number(idx);
         const b = savedBills[realIdx];
         if (!b) return;
-        window.smartShopSetPageTitle('detail-bill-title', `बिल तपशील - #${b.billNo}`, 'P12');
+        window.smartShopSetPageTitle('detail-bill-title', `बिल तपशील - ${String(b.billNo || "").replace(/^#/, "")}`, 'P12');
 
         const modeClass = b.mode === 'ONLINE' ? 'mode-online' : (b.mode === 'UDHARI' ? 'mode-udhari' : 'mode-cash');
         const itemsHtml = b.items.map((i, itemIdx) => `
             <tr>
                 <td>${i.name || '-'}</td>
                 <td>${i.qty ?? 0}</td>
-                <td>₹${i.mrp ?? 0}</td>
-                <td>₹${i.discountedPrice ?? i.mrp ?? 0}</td>
-                <td style="color:#16a34a;font-weight:900;">₹${i.total ?? 0}</td>
+                <td>${i.mrp ?? 0}</td>
+                <td>${i.discountedPrice ?? i.mrp ?? 0}</td>
+                <td style="color:#16a34a;font-weight:900;">${i.total ?? 0}</td>
             </tr>
         `).join('');
 
@@ -5916,7 +5916,7 @@ button,input,select,textarea{touch-action:manipulation;}
         }
 
         const pendingHtml = Number(b.pendingUdhari || 0) > 0
-            ? `<span class="bill-detail-pending">जमा: ₹${b.paidAmt || 0} | शिल्लक उधारी: ₹${b.pendingUdhari || 0}</span>`
+            ? `<span class="bill-detail-pending">जमा: ${b.paidAmt || 0} | शिल्लक उधारी: ${b.pendingUdhari || 0}</span>`
             : '';
 
         const content = `
@@ -5927,7 +5927,7 @@ button,input,select,textarea{touch-action:manipulation;}
                     <div class="bill-detail-info-row"><label>पत्ता:</label><div class="bill-detail-info-value">${b.custAddress || 'N/A'}</div></div>
                 </div>
                 <div class="bill-detail-info-column">
-                    <div class="bill-detail-info-row"><label>बिल नंबर:</label><div class="bill-detail-info-value bill-detail-billno">#${b.billNo}</div></div>
+                    <div class="bill-detail-info-row"><label>बिल नंबर:</label><div class="bill-detail-info-value bill-detail-billno">${String(b.billNo || "").replace(/^#/, "")}</div></div>
                     <div class="bill-detail-info-row"><label>तारीख:</label><div class="bill-detail-info-value">${formatSmartShopBillDate(b.date)}</div></div>
                     <div class="bill-detail-info-row"><label>पेमेंट:</label><div class="bill-detail-info-value bill-detail-payment"><span class="badge-mode ${modeClass}">${b.mode}</span>${audioHtml}</div></div>
                 </div>
@@ -5936,7 +5936,7 @@ button,input,select,textarea{touch-action:manipulation;}
             <div class="bill-detail-table-wrap">
                 <table class="bill-detail-table">
                     <thead>
-                        <tr><th>आयटमचे नाव (Item Name)</th><th>Qty / नग</th><th>MRP ₹</th><th>Discounted Price ₹</th><th>एकूण ₹ (Total)</th></tr>
+                        <tr><th>आयटमचे नाव (Item Name)</th><th>Qty / नग</th><th>MRP </th><th>Discounted Price </th><th>एकूण  (Total)</th></tr>
                     </thead>
                     <tbody>${itemsHtml || '<tr><td colspan="5">कोणतेही आयटम नाही</td></tr>'}</tbody>
                 </table>
@@ -5946,7 +5946,7 @@ button,input,select,textarea{touch-action:manipulation;}
                 <div class="bill-detail-bottom-left">
                     <div class="bill-detail-total-bar">
                         <span>एकूण नग (Qty): <b>${b.items.reduce((s,i)=>s+(Number(i.qty)||0),0)}</b></span>
-                        <span>अंतिम बिल: <b>₹${b.finalBill ?? 0}</b></span>
+                        <span>अंतिम बिल: <b>${b.finalBill ?? 0}</b></span>
                         ${pendingHtml}
                     </div>
                     <div class="bill-detail-actions">
@@ -5957,9 +5957,9 @@ button,input,select,textarea{touch-action:manipulation;}
                     </div>
                 </div>
                 <div class="bill-detail-summary">
-                    <div class="bill-detail-summary-row bill-detail-summary-mrp"><span>एकूण MRP :</span><b>₹${Number(b.grossTotal || 0).toFixed(0)}</b></div>
-                    <div class="bill-detail-summary-row bill-detail-summary-discount"><span>डिस्काउंट :</span><b>₹${Number(b.discountAmt || 0).toFixed(0)}</b></div>
-                    <div class="bill-detail-summary-row bill-detail-summary-final"><span>अंतिम पे :</span><b>₹${Number(b.finalBill || 0).toFixed(0)}</b></div>
+                    <div class="bill-detail-summary-row bill-detail-summary-mrp"><span>एकूण MRP :</span><b>${Number(b.grossTotal || 0).toFixed(0)}</b></div>
+                    <div class="bill-detail-summary-row bill-detail-summary-discount"><span>डिस्काउंट :</span><b>${Number(b.discountAmt || 0).toFixed(0)}</b></div>
+                    <div class="bill-detail-summary-row bill-detail-summary-final"><span>अंतिम पे :</span><b>${Number(b.finalBill || 0).toFixed(0)}</b></div>
                 </div>
             </div>
         `;
@@ -6018,7 +6018,7 @@ button,input,select,textarea{touch-action:manipulation;}
                 <p style="margin:2px 0;">तारीख: ${formatSmartShopBillDate(record.date)}</p>
             </div>
             <div style="font-size:12px; margin-bottom:6px;">
-                <b>बिल क्र:</b> ${record.billNo}<br>
+                <b>बिल क्र:</b> ${String(record.billNo || "").replace(/^#/, "")}<br>
                 <b>ग्राहक:</b> ${record.custName} (${record.custMobile})<br>
                 ${record.custAddress ? `<b>पत्ता:</b> ${record.custAddress}<br>` : ''}
             </div>
@@ -6034,10 +6034,10 @@ button,input,select,textarea{touch-action:manipulation;}
                 <tbody>${itemsRows}</tbody>
             </table>
             <div class="receipt-total">
-                <div>एकूण रक्कम: ₹${record.grossTotal}</div>
-                ${record.discountAmt > 0 ? `<div>सूट: ₹${record.discountAmt.toFixed(0)}</div>` : ''}
-                <div style="font-size:14px; margin-top:4px;">अंतिम देय: ₹${record.finalBill} (${record.mode})</div>
-                ${record.pendingUdhari > 0 ? `<div style="color:#dc2626;">बाकी उधारी: ₹${record.pendingUdhari}</div>` : ''}
+                <div>एकूण रक्कम: ${record.grossTotal}</div>
+                ${record.discountAmt > 0 ? `<div>सूट: ${record.discountAmt.toFixed(0)}</div>` : ''}
+                <div style="font-size:14px; margin-top:4px;">अंतिम देय: ${record.finalBill} (${record.mode})</div>
+                ${record.pendingUdhari > 0 ? `<div style="color:#dc2626;">बाकी उधारी: ${record.pendingUdhari}</div>` : ''}
             </div>
             <div style="text-align:center; margin-top:15px; font-size:11px;">
                 *** धन्यवाद! पुन्हा भेट द्या ***
@@ -6692,7 +6692,7 @@ button,input,select,textarea{touch-action:manipulation;}
                 <td><b>${idx + 1}</b></td>
                 <td><b>${item.barcode || '-'}</b></td>
                 <td><b>${item.name}</b></td>
-                <td style="color:#16a34a;font-weight:bold;">₹${item.mrp}</td>
+                <td style="color:#16a34a;font-weight:bold;">${item.mrp}</td>
                 <td><button class="btn-action-sm btn-delete-sm" title="B List मधून काढा" onclick="removeFromBList('${item.id}')">✕</button></td>
             `;
             tr.tabIndex = 0;
@@ -6730,7 +6730,7 @@ button,input,select,textarea{touch-action:manipulation;}
                     <td><img src="${photoSrc}" style="width:42px;height:42px;object-fit:cover;border-radius:4px;border:1px solid #cbd5e1;"></td>
                     <td><b>${item.barcode || '-'}</b></td>
                     <td><b>${item.name}</b></td>
-                    <td style="color:#16a34a;font-weight:bold;">₹${item.mrp}</td>
+                    <td style="color:#16a34a;font-weight:bold;">${item.mrp}</td>
                     <td><button class="btn-action-sm ${already ? 'btn-dark' : 'btn-edit-sm'}" ${already ? 'disabled' : ''} onclick="addToBList('${item.id}')">${already ? '✓ Added' : '➕ Add'}</button></td>
                 `;
                 tbody.appendChild(tr);
@@ -6977,7 +6977,7 @@ button,input,select,textarea{touch-action:manipulation;}
                     <td><b>${c.name}</b></td>
                     <td>${c.mobile}</td>
                     <td><b>${c.address || 'N/A'}</b></td>
-                    <td style="color:${(c.udhariBalance || 0) > 0 ? '#dc2626' : '#16a34a'}; font-weight:bold;">₹${c.udhariBalance || 0}</td>
+                    <td style="color:${(c.udhariBalance || 0) > 0 ? '#dc2626' : '#16a34a'}; font-weight:bold;">${c.udhariBalance || 0}</td>
                     <td style="text-align:center;">
                         <button class="btn-action-sm btn-edit-sm" onclick="clearCustomerUdhari(${idx})">जमा / Clear</button>
                     </td>
@@ -6989,7 +6989,7 @@ button,input,select,textarea{touch-action:manipulation;}
 
     function clearCustomerUdhari(idx) {
         const cust = customerList[idx];
-        const amt = parseFloat(prompt(`${cust.name} यांची उधारी ₹${cust.udhariBalance || 0} आहे. किती रक्कम जमा झाली?`, cust.udhariBalance || 0));
+        const amt = parseFloat(prompt(`${cust.name} यांची उधारी ${cust.udhariBalance || 0} आहे. किती रक्कम जमा झाली?`, cust.udhariBalance || 0));
         if (!isNaN(amt) && amt > 0) {
             cust.udhariBalance = Math.max(0, (cust.udhariBalance || 0) - amt);
             persistData();
@@ -7123,17 +7123,17 @@ button,input,select,textarea{touch-action:manipulation;}
             }
         });
 
-        document.getElementById('dash-total').innerText = `₹ ${total.toLocaleString()}`;
-        document.getElementById('dash-online').innerText = `₹ ${online.toLocaleString()}`;
-        document.getElementById('dash-cash').innerText = `₹ ${cash.toLocaleString()}`;
-        document.getElementById('dash-udhari').innerText = `₹ ${udhari.toLocaleString()}`;
+        document.getElementById('dash-total').innerText = ` ${total.toLocaleString()}`;
+        document.getElementById('dash-online').innerText = ` ${online.toLocaleString()}`;
+        document.getElementById('dash-cash').innerText = ` ${cash.toLocaleString()}`;
+        document.getElementById('dash-udhari').innerText = ` ${udhari.toLocaleString()}`;
 
         document.getElementById('rep-count').innerText = count;
-        document.getElementById('rep-total').innerText = `₹ ${total.toLocaleString()}`;
-        document.getElementById('rep-online').innerText = `₹ ${online.toLocaleString()}`;
-        document.getElementById('rep-cash').innerText = `₹ ${cash.toLocaleString()}`;
-        document.getElementById('rep-udhari').innerText = `₹ ${udhari.toLocaleString()}`;
-        document.getElementById('rep-discount').innerText = `₹ ${discount.toLocaleString()}`;
+        document.getElementById('rep-total').innerText = ` ${total.toLocaleString()}`;
+        document.getElementById('rep-online').innerText = ` ${online.toLocaleString()}`;
+        document.getElementById('rep-cash').innerText = ` ${cash.toLocaleString()}`;
+        document.getElementById('rep-udhari').innerText = ` ${udhari.toLocaleString()}`;
+        document.getElementById('rep-discount').innerText = ` ${discount.toLocaleString()}`;
     }
 
     function shareCurrentBillWhatsApp() {
@@ -7152,7 +7152,7 @@ button,input,select,textarea{touch-action:manipulation;}
         const finalPay = grossTotal - discVal;
 
         let msg = `🛍️ *श्री सद्गुरू क्रिएशन* 🛍️\n--------------------------\n`;
-        msg += `🧾 *बिल नंबर:* ${tab.billNo}\n`;
+        msg += `🧾 *बिल नंबर:* ${String(tab.billNo || "").replace(/^#/, "")}\n`;
         msg += `👤 *ग्राहक:* ${tab.custName || 'GUEST'}\n`;
         msg += `📍 *पत्ता:* ${tab.custAddress || 'N/A'}\n`;
         msg += `📅 *तारीख:* ${document.getElementById('live-single-datetime').innerText}\n`;
@@ -7160,13 +7160,13 @@ button,input,select,textarea{touch-action:manipulation;}
         msg += `*आयटम्स विवरण:*\n`;
         
         validItems.forEach((item, i) => {
-            msg += `${i + 1}. ${item.name} - ${item.qty} नग x ₹${item.mrp} = ₹${item.total}\n`;
+            msg += `${i + 1}. ${item.name} - ${item.qty} नग x ${item.mrp} = ${item.total}\n`;
         });
 
         msg += `--------------------------\n`;
-        msg += `💰 *एकूण रक्कम:* ₹${grossTotal}\n`;
-        if (discVal > 0) msg += `🏷️ *सूट (Discount):* ₹${discVal.toFixed(0)}\n`;
-        msg += `✅ *अंतिम देय रक्कम:* ₹${finalPay.toFixed(0)}\n\n`;
+        msg += `💰 *एकूण रक्कम:* ${grossTotal}\n`;
+        if (discVal > 0) msg += `🏷️ *सूट (Discount):* ${discVal.toFixed(0)}\n`;
+        msg += `✅ *अंतिम देय रक्कम:* ${finalPay.toFixed(0)}\n\n`;
         msg += `धन्यवाद! पुन्हा भेट द्या. 🙏`;
 
         const phone = tab.custMobile ? tab.custMobile.replace(/[^0-9]/g, '') : '';
@@ -7182,7 +7182,7 @@ button,input,select,textarea{touch-action:manipulation;}
     function shareBillByObjectWhatsApp(idx) {
         const b = savedBills[idx];
         let msg = `🛍️ *श्री सद्गुरू क्रिएशन* 🛍️\n--------------------------\n`;
-        msg += `🧾 *बिल नंबर:* ${b.billNo}\n`;
+        msg += `🧾 *बिल नंबर:* ${String(b.billNo || "").replace(/^#/, "")}\n`;
         msg += `👤 *ग्राहक:* ${b.custName}\n`;
         msg += `📍 *पत्ता:* ${b.custAddress || 'N/A'}\n`;
         msg += `📅 *तारीख:* ${formatSmartShopBillDate(b.date)}\n`;
@@ -7190,14 +7190,14 @@ button,input,select,textarea{touch-action:manipulation;}
         msg += `*आयटम्स विवरण:*\n`;
         
         b.items.forEach((item, i) => {
-            msg += `${i + 1}. ${item.name} - ${item.qty} नग x ₹${item.mrp} = ₹${item.total}\n`;
+            msg += `${i + 1}. ${item.name} - ${item.qty} नग x ${item.mrp} = ${item.total}\n`;
         });
 
         msg += `--------------------------\n`;
-        msg += `💰 *एकूण रक्कम:* ₹${b.grossTotal}\n`;
-        if (b.discountAmt > 0) msg += `🏷️ *सूट:* ₹${b.discountAmt.toFixed(0)}\n`;
-        msg += `✅ *भरलेली रक्कम:* ₹${b.paidAmt || b.finalBill} (${b.mode})\n`;
-        if (b.pendingUdhari > 0) msg += `⏳ *शिल्लक उधारी:* ₹${b.pendingUdhari}\n`;
+        msg += `💰 *एकूण रक्कम:* ${b.grossTotal}\n`;
+        if (b.discountAmt > 0) msg += `🏷️ *सूट:* ${b.discountAmt.toFixed(0)}\n`;
+        msg += `✅ *भरलेली रक्कम:* ${b.paidAmt || b.finalBill} (${b.mode})\n`;
+        if (b.pendingUdhari > 0) msg += `⏳ *शिल्लक उधारी:* ${b.pendingUdhari}\n`;
         msg += `\nधन्यवाद! पुन्हा भेट द्या. 🙏`;
 
         const phone = b.custMobile ? b.custMobile.replace(/[^0-9]/g, '') : '';
@@ -7233,11 +7233,11 @@ button,input,select,textarea{touch-action:manipulation;}
         msg += `📅 *तारीख:* ${document.getElementById('live-single-datetime').innerText}\n`;
         msg += `--------------------------\n`;
         msg += `🧾 *एकूण बिले:* ${count}\n`;
-        msg += `💰 *एकूण विक्री:* ₹${total.toLocaleString()}\n`;
-        msg += `📲 *Online (UPI):* ₹${online.toLocaleString()}\n`;
-        msg += `💵 *Cash जमा:* ₹${cash.toLocaleString()}\n`;
-        msg += `⏳ *उधारी (Pending):* ₹${udhari.toLocaleString()}\n`;
-        msg += `🏷️ *दिलेली सूट:* ₹${discount.toLocaleString()}\n`;
+        msg += `💰 *एकूण विक्री:* ${total.toLocaleString()}\n`;
+        msg += `📲 *Online (UPI):* ${online.toLocaleString()}\n`;
+        msg += `💵 *Cash जमा:* ${cash.toLocaleString()}\n`;
+        msg += `⏳ *उधारी (Pending):* ${udhari.toLocaleString()}\n`;
+        msg += `🏷️ *दिलेली सूट:* ${discount.toLocaleString()}\n`;
         msg += `--------------------------\n`;
         msg += `रिपोर्ट जनरेट झाला system द्वारे. ✅`;
 
@@ -7273,7 +7273,7 @@ button,input,select,textarea{touch-action:manipulation;}
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'waiting-bill-popup-item' + (index === waitingBillsPopupIndex ? ' selected' : '');
-            btn.textContent = `Waiting Bill ${index + 1} — ${tab.billNo} (${tab.custName || 'New'})`;
+            btn.textContent = `Waiting Bill ${index + 1} — ${String(tab.billNo || "").replace(/^#/, "")} (${tab.custName || 'New'})`;
             btn.onclick = () => selectWaitingBillFromPopup(index);
             list.appendChild(btn);
         });
@@ -7474,12 +7474,12 @@ async function parseItemListPDF(file){
       // The uploaded Smart Shop PDF format is: Item Name | Size | Quantity | Rate.
       // Find the final two numeric cells in their left-to-right order.
       const numeric=[];
-      cells.forEach((c,i)=>{ if(/^₹?\s*\d+(?:[,.]\d+)?$/.test(c)) numeric.push(i); });
+      cells.forEach((c,i)=>{ if(/^?\s*\d+(?:[,.]\d+)?$/.test(c)) numeric.push(i); });
       if(numeric.length<2) continue;
       const qtyIdx=numeric[numeric.length-2], rateIdx=numeric[numeric.length-1];
       if(rateIdx<=qtyIdx || qtyIdx<1) continue;
-      const qty=parseFloat(String(cells[qtyIdx]).replace(/[₹,]/g,''));
-      const rate=parseFloat(String(cells[rateIdx]).replace(/[₹,]/g,''));
+      const qty=parseFloat(String(cells[qtyIdx]).replace(/[,]/g,''));
+      const rate=parseFloat(String(cells[rateIdx]).replace(/[,]/g,''));
       if(!Number.isFinite(qty)||!Number.isFinite(rate)) continue;
 
       const before=cells.slice(0,qtyIdx).filter(Boolean);
@@ -7566,11 +7566,11 @@ function confirmItemListUploadSave(){
         <div class="modal-body item-cost-popup-body">
             <div class="item-cost-row">
                 <span class="item-cost-label">Total MRP</span>
-                <span id="item-cost-total-mrp" class="item-cost-value item-cost-mrp">₹ 0</span>
+                <span id="item-cost-total-mrp" class="item-cost-value item-cost-mrp"> 0</span>
             </div>
             <div class="item-cost-row">
                 <span class="item-cost-label">Actual Cost</span>
-                <span id="item-cost-actual-cost" class="item-cost-value">₹ 0.00</span>
+                <span id="item-cost-actual-cost" class="item-cost-value"> 0.00</span>
             </div>
         </div>
     </div>

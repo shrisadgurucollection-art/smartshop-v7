@@ -3474,26 +3474,11 @@ button,input,select,textarea{touch-action:manipulation;}
             const actions = document.createElement('div');
             actions.className = 'modal-window-actions';
 
-            const waitingBtn = document.createElement('button');
-            waitingBtn.type = 'button';
-            waitingBtn.className = 'waiting-bills-header-btn';
-            waitingBtn.tabIndex = 0;
-            waitingBtn.style.cssText = 'width:auto;padding:0 10px;font-size:13px;';
-            waitingBtn.textContent = '⏳ Waiting Bills';
-            waitingBtn.title = 'Waiting Bills';
-            waitingBtn.setAttribute('aria-label', 'Waiting Bills');
-            waitingBtn.onclick = function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                openWaitingBillsPopup();
-            };
+
 
             const sizeBtn = null;
 
-            if (modal.id === 'modal-bill') {
-                waitingBtn.style.marginRight = '8px';
-                header.insertBefore(waitingBtn, header.querySelector('#bill-modal-title'));
-            }
+
             header.appendChild(actions);
             if (modal.id === 'modal-bill') {
                 actions.appendChild(closeBtn);

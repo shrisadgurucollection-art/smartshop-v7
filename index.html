@@ -1318,123 +1318,19 @@ button,input,select,textarea{touch-action:manipulation;}
   }
 })();
 </script>
-<style id="p11-reference-design">
-/* P11 reference design: visual-only override; existing logic/routes remain unchanged. */
-#modal-history.p11-reference-page .modal-content,
-#modal-history .history-fullscreen-content{background:#fff;border-radius:14px;overflow:hidden;}
-#modal-history .history-main-header{background:#0b4f8a!important;color:#fff!important;min-height:76px;padding:14px 24px;display:flex;align-items:center;}
-#modal-history .history-main-header h3{font-size:30px!important;font-weight:800!important;color:#fff!important;margin:0;display:flex;align-items:center;gap:12px;}
-#modal-history .history-main-header .smartshop-page-code-header-badge{background:#1677e8!important;color:#fff!important;border:1px solid #8fc1ff!important;font-size:24px!important;border-radius:8px!important;padding:4px 14px!important;}
-#modal-history .history-fullscreen-body{background:#fff;padding:18px 22px 14px!important;}
-#modal-history .p11-reference-filter-panel{display:grid!important;grid-template-columns:minmax(0,1fr) 335px!important;gap:14px!important;align-items:center!important;margin-bottom:18px!important;}
-#modal-history .p11-reference-search{height:58px!important;border:2px solid #d7e0ea!important;border-radius:12px!important;background:#fff!important;}
-#modal-history .p11-reference-search input{font-size:21px!important;color:#17365d!important;}
-#modal-history .p11-reference-date{display:flex!important;align-items:center!important;gap:10px!important;}
-#modal-history .p11-reference-date label{font-size:20px!important;font-weight:700!important;color:#17365d!important;white-space:nowrap;}
-#modal-history .p11-reference-date input{height:54px!important;border:2px solid #d7e0ea!important;border-radius:10px!important;font-size:20px!important;font-weight:700!important;color:#17365d!important;text-align:center!important;}
-#modal-history .p11-reference-date-to,#modal-history .p11-reference-search-button{display:none!important;}
-#modal-history .history-table-container{border:1px solid #d5e0ec;border-radius:12px;overflow:hidden;background:#fff;max-height:560px;}
-#modal-history .history-main-table{width:100%;border-collapse:collapse!important;font-size:20px!important;}
-#modal-history .history-main-table thead th{background:#0b4f8a!important;color:#fff!important;font-size:22px!important;font-weight:800!important;padding:13px 12px!important;text-align:center!important;border-right:1px solid rgba(255,255,255,.3)!important;}
-#modal-history .history-main-table tbody td{font-size:20px!important;font-weight:500!important;color:#17365d!important;padding:10px 12px!important;text-align:center!important;border-bottom:1px solid #d9e2ec!important;}
-#modal-history .history-main-table tbody tr.selected{background:#fff7c7!important;outline:3px solid #f4c400!important;outline-offset:-2px!important;}
-#modal-history .history-main-table tbody tr.selected td:first-child b{color:#0b4f8a!important;}
-#modal-history .history-gross-summary-grid{grid-template-columns:repeat(4,1fr)!important;gap:12px!important;margin-top:16px!important;}
-#modal-history .history-gross-summary-grid>div{min-height:112px!important;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:12px!important;border-radius:14px!important;}
-#modal-history .history-gross-summary-grid strong{font-size:32px!important;font-weight:900!important;}
-#modal-history .history-gross-summary-grid small{font-size:16px!important;}
-@media(max-width:900px){#modal-history .p11-reference-filter-panel{grid-template-columns:1fr!important}.p11-reference-date-to{display:none!important}#modal-history .history-gross-summary-grid{grid-template-columns:repeat(2,1fr)!important}}
-</style><style id="smartshop-report-filter-reference-fix">
-/* Search/date area: match the clean P11 reference layout. */
-#modal-history .p11-reference-filter-panel{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) 360px!important;
-  gap:18px!important;
-  align-items:center!important;
-  width:100%!important;
-}
-#modal-history .p11-reference-search{
-  width:100%!important;
-  height:58px!important;
-  box-sizing:border-box!important;
-}
-#modal-history .p11-reference-date{
-  width:100%!important;
-  display:grid!important;
-  grid-template-columns:auto minmax(180px,1fr)!important;
-  align-items:center!important;
-  gap:12px!important;
-}
-#modal-history .p11-reference-date label{
-  font-size:19px!important;
-  font-weight:800!important;
-  white-space:nowrap!important;
-}
-#modal-history .p11-reference-date input{
-  width:100%!important;
-  height:54px!important;
-  box-sizing:border-box!important;
-  padding:8px 42px 8px 14px!important;
-}
+<style id="smartshop-report-filter-reference-fix">
 #modal-today-gross-profit .history-search-panel{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) 255px 255px 105px!important;
-  gap:14px!important;
-  align-items:end!important;
-  width:100%!important;
-  margin-bottom:18px!important;
+  display:grid!important;grid-template-columns:minmax(0,1fr) 255px 255px 105px!important;
+  gap:14px!important;align-items:end!important;width:100%!important;margin-bottom:18px!important;
 }
-#modal-today-gross-profit .history-search-box{
-  height:58px!important;
-  width:100%!important;
-  box-sizing:border-box!important;
-}
-#modal-today-gross-profit .history-search-box input{
-  height:100%!important;
-  width:100%!important;
-  font-size:20px!important;
-  box-sizing:border-box!important;
-}
-#modal-today-gross-profit .history-date-field{
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:stretch!important;
-  gap:6px!important;
-  width:100%!important;
-}
-#modal-today-gross-profit .history-date-field label{
-  font-size:18px!important;
-  font-weight:800!important;
-  color:#17365d!important;
-  white-space:nowrap!important;
-}
-#modal-today-gross-profit .history-date-field input{
-  height:54px!important;
-  width:100%!important;
-  box-sizing:border-box!important;
-  padding:8px 42px 8px 14px!important;
-  border:2px solid #d7e0ea!important;
-  border-radius:10px!important;
-  font-size:19px!important;
-  font-weight:700!important;
-  color:#17365d!important;
-}
-#modal-today-gross-profit .history-search-button{
-  height:54px!important;
-  min-width:105px!important;
-  border-radius:10px!important;
-  font-size:18px!important;
-  font-weight:800!important;
-  box-sizing:border-box!important;
-}
-@media(max-width:1050px){
-  #modal-today-gross-profit .history-search-panel{grid-template-columns:minmax(0,1fr) 210px 210px 95px!important}
-}
-@media(max-width:850px){
-  #modal-history .p11-reference-filter-panel,
-  #modal-today-gross-profit .history-search-panel{grid-template-columns:1fr!important}
-  #modal-history .p11-reference-date{grid-template-columns:140px 1fr!important}
-}
+#modal-today-gross-profit .history-search-box{height:58px!important;width:100%!important;box-sizing:border-box!important;}
+#modal-today-gross-profit .history-search-box input{height:100%!important;width:100%!important;font-size:20px!important;box-sizing:border-box!important;}
+#modal-today-gross-profit .history-date-field{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;width:100%!important;}
+#modal-today-gross-profit .history-date-field label{font-size:18px!important;font-weight:800!important;color:#17365d!important;white-space:nowrap!important;}
+#modal-today-gross-profit .history-date-field input{height:54px!important;width:100%!important;box-sizing:border-box!important;padding:8px 42px 8px 14px!important;border:2px solid #d7e0ea!important;border-radius:10px!important;font-size:19px!important;font-weight:700!important;color:#17365d!important;}
+#modal-today-gross-profit .history-search-button{height:54px!important;min-width:105px!important;border-radius:10px!important;font-size:18px!important;font-weight:800!important;box-sizing:border-box!important;}
+@media(max-width:1050px){#modal-today-gross-profit .history-search-panel{grid-template-columns:minmax(0,1fr) 210px 210px 95px!important}}
+@media(max-width:850px){#modal-today-gross-profit .history-search-panel{grid-template-columns:1fr!important}}
 </style></head>
 <body>
 
@@ -2038,24 +1934,19 @@ button,input,select,textarea{touch-action:manipulation;}
             <h3>📋 बिल हिस्ट्री<span class="smartshop-page-code-header-badge" data-page-code="P11">P11</span></h3>
         </div>
         <div class="modal-body history-fullscreen-body">
-            <div class="history-search-panel p11-reference-filter-panel">
-                <div class="history-search-box p11-reference-search"><span class="history-search-icon">🔍</span><input type="text" id="history-search-input" placeholder="बिल नंबर / ग्राहक नाव / मोबाईल नंबर शोधा..." oninput="renderHistoryTable()" onkeydown="handleHistorySearchKey(event)"></div>
-                <div class="history-date-field p11-reference-date"><label>दिनांक पासून</label><input type="text" id="history-date-from" class="smartshop-date-input" inputmode="numeric" maxlength="10" placeholder="DD-MM-YYYY" autocomplete="off" onfocus="smartDateFocus(this)" onkeydown="handleSmartShopDateKey(event,this)" onchange="renderHistoryTable()"></div>
-                <div class="history-date-field p11-reference-date-to" aria-hidden="true"><label>दिनांक पर्यंत</label><input type="text" id="history-date-to" class="smartshop-date-input" inputmode="numeric" maxlength="10" placeholder="DD-MM-YYYY" autocomplete="off" onfocus="smartDateFocus(this)" onkeydown="handleSmartShopDateKey(event,this)" onchange="renderHistoryTable()"></div>
-                <button class="history-search-button p11-reference-search-button" type="button" tabindex="0" onclick="renderHistoryTable()" onkeydown="handleHistorySearchButtonKey(event)">🔍 शोधा</button>
+            <div class="history-search-panel">
+                <div class="history-search-box"><span class="history-search-icon">🔍</span><input type="text" id="history-search-input" placeholder="बिल नंबर / ग्राहक नाव / मोबाईल नंबर शोधा..." oninput="renderHistoryTable()" onkeydown="handleHistorySearchKey(event)"></div>
+                <div class="history-date-field"><label>दिनांक पासून</label><input type="text" id="history-date-from" class="smartshop-date-input" inputmode="numeric" maxlength="10" placeholder="DD-MM-YYYY" autocomplete="off" onfocus="smartDateFocus(this)" onkeydown="handleSmartShopDateKey(event,this)" onchange="renderHistoryTable()"></div>
+                <div class="history-date-field"><label>दिनांक पर्यंत</label><input type="text" id="history-date-to" class="smartshop-date-input" inputmode="numeric" maxlength="10" placeholder="DD-MM-YYYY" autocomplete="off" onfocus="smartDateFocus(this)" onkeydown="handleSmartShopDateKey(event,this)" onchange="renderHistoryTable()"></div>
+                <button class="history-search-button" type="button" tabindex="0" onclick="renderHistoryTable()" onkeydown="handleHistorySearchButtonKey(event)">🔍 शोधा</button>
             </div>
             <div class="table-container history-table-container">
                 <table class="custom-table history-main-table">
-                    <thead><tr><th>बिल नं.</th><th>तारीख / वेळ</th><th>ग्राहक</th><th>मोबाईल</th><th>एकूण रक्कम</th><th>पेमेंट</th></tr></thead>
+                    <thead><tr><th>बिल नं.</th><th>तारीख / वेळ</th><th>ग्राहक</th><th>Qty</th><th>एकूण</th><th>पेमेंट</th><th>Recording</th></tr></thead>
                     <tbody id="history-table-tbody"></tbody>
                 </table>
             </div>
-            <div class="history-gross-summary-grid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px;">
-                <div style="padding:14px 12px;border:1px solid #93c5fd;border-radius:14px;background:#eff6ff;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);"><div style="font-weight:800;color:#1d4ed8;">एकूण बिलांची संख्या</div><strong id="history-total-bills" style="display:block;font-size:25px;color:#1d4ed8;line-height:1.2;">0</strong><small style="color:#475569;">बिल</small></div>
-                <div style="padding:14px 12px;border:1px solid #86efac;border-radius:14px;background:#ecfdf5;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);"><div style="font-weight:800;color:#047857;">एकूण विक्री</div><strong id="history-total-sales" style="display:block;font-size:25px;color:#047857;line-height:1.2;">₹ 0</strong></div>
-                <div style="padding:14px 12px;border:1px solid #86efac;border-radius:14px;background:#f0fdf4;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);"><div style="font-weight:800;color:#15803d;">एकूण प्रॉफिट</div><strong id="history-total-profit" style="display:block;font-size:25px;color:#15803d;line-height:1.2;">₹ 0</strong><small style="color:#475569;">(कॉस्ट नुसार)</small></div>
-                <div style="padding:14px 12px;border:1px solid #c4b5fd;border-radius:14px;background:#f5f3ff;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);"><div style="font-weight:800;color:#6d28d9;">सरासरी प्रॉफिट %</div><strong id="history-total-profit-percent" style="display:block;font-size:25px;color:#6d28d9;line-height:1.2;">0.00%</strong><small style="color:#475569;">(कॉस्ट नुसार)</small></div>
-            </div>
+            <div class="history-summary-bar"><span>एकूण बिले : <b id="history-total-bills">0</b></span><span>|</span><span>एकूण विक्री : <b id="history-total-sales">0</b></span></div>
         </div>
     </div>
 </div>
@@ -6076,7 +5967,6 @@ button,input,select,textarea{touch-action:manipulation;}
         if (search) search.value = '';
         renderHistoryTable();
         showModal('modal-history');
-      document.getElementById('modal-history')?.classList.add('p11-reference-page');
 
         // M12 -> P11: the Bill History list is the active keyboard page.
         // Keep the yellow cursor on the first bill row instead of returning
@@ -6219,10 +6109,19 @@ button,input,select,textarea{touch-action:manipulation;}
                     <td><b style="color:#0b4f8a;">${b.billNo}</b></td>
                     <td>${formatSmartShopBillDate(b.date)}</td>
                     <td>${b.custName}</td>
-                    <td>${b.custMobile || 'N/A'}</td>
+                    <td>${b.items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)}</td>
                     <td style="color:#16a34a; font-weight:900;">${Number(b.finalBill || 0).toFixed(0)}</td>
                     <td><span class="badge-mode ${modeBadgeClass}">${b.mode === 'CASH' ? 'Cash' : b.mode === 'ONLINE' ? 'Online' : 'Udhari'}</span></td>
+                    <td>${b.audioNote ? `<button type="button" class="history-audio-btn" title="Recording ऐका" aria-label="Recording ऐका">▶</button>` : `<span class="history-audio-missing">—</span>`}</td>
                 `;
+                const audioBtn = tr.querySelector('.history-audio-btn');
+                if (audioBtn) {
+                    audioBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        playAudioNote(b.audioNote);
+                    });
+                }
                 tr.addEventListener('click', () => {
                     // Remember and visibly select the exact Bill History row that opened Bill Detail.
                     tbody.querySelectorAll('tr').forEach(r => r.classList.remove('selected'));
@@ -6255,22 +6154,10 @@ button,input,select,textarea{touch-action:manipulation;}
 
         const totalBills = billsToDisplay.length;
         const totalSales = billsToDisplay.reduce((sum, bill) => sum + (Number(bill.finalBill) || 0), 0);
-        const totalCost = billsToDisplay.reduce((sum, bill) => {
-            return sum + (bill.items || []).reduce((itemSum, item) => {
-                const master = masterItems.find(m => String(m.id) === String(item.itemId));
-                return itemSum + ((Number(master?.cost) || 0) * (Number(item.qty) || 0));
-            }, 0);
-        }, 0);
-        const totalProfit = totalSales - totalCost;
-        const totalProfitPercent = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
         const totalBillsEl = document.getElementById('history-total-bills');
         const totalSalesEl = document.getElementById('history-total-sales');
-        const totalProfitEl = document.getElementById('history-total-profit');
-        const totalProfitPercentEl = document.getElementById('history-total-profit-percent');
         if (totalBillsEl) totalBillsEl.textContent = totalBills;
-        if (totalSalesEl) totalSalesEl.textContent = '₹ ' + totalSales.toFixed(0);
-        if (totalProfitEl) totalProfitEl.textContent = '₹ ' + totalProfit.toFixed(0);
-        if (totalProfitPercentEl) totalProfitPercentEl.textContent = totalProfitPercent.toFixed(2) + '%';
+        if (totalSalesEl) totalSalesEl.textContent = '' + totalSales.toFixed(0);
     }
 
     function resetHistoryDateFilter() {

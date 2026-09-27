@@ -5829,6 +5829,80 @@ button,input,select,textarea{touch-action:manipulation;}
         }, 30);
     }
 
+    // P11 Bill History keyboard lock.
+    // Search box is the entry focus. Arrow/Enter must never let the cursor
+    // disappear. Once on a bill row, Up/Down moves only between bill rows.
+    (function installP11BillHistoryKeyboard(){
+        if (window.__smartshopP11BillHistoryKeyboardInstalled) return;
+        window.__smartshopP11BillHistoryKeyboardInstalled = true;
+
+        function isP11(){
+            const modal = document.getElementById('modal-history');
+            return !!(
+                modal?.classList.contains('active') &&
+                modal.dataset.route === 'bill-history'
+            );
+        }
+
+        function rows(){
+            return Array.from(document.querySelectorAll(
+                '#history-table-tbody tr[role="button"]'
+            ));
+        }
+
+        function focusRow(index){
+            const list = rows();
+            if (!list.length) return false;
+            const safe = Math.max(0, Math.min(index, list.length - 1));
+            list.forEach(r => r.classList.remove('selected'));
+            const row = list[safe];
+            row.classList.add('selected');
+            row.focus({preventScroll:true});
+            row.scrollIntoView({block:'nearest'});
+            return true;
+        }
+
+        document.addEventListener('keydown', function(e){
+            if (!isP11()) return;
+
+            const target = e.target;
+            const search = document.getElementById('history-search-input');
+            const list = rows();
+
+            // From search box, every navigation key has a valid destination.
+            // This prevents the yellow cursor from disappearing.
+            if (target === search) {
+                if (['Enter','ArrowDown','ArrowUp','ArrowLeft','ArrowRight'].includes(e.key)) {
+                    if (focusRow(0)) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                    }
+                }
+                return;
+            }
+
+            const rowIndex = list.indexOf(target);
+            if (rowIndex < 0) return;
+
+            if (e.key === 'ArrowDown') {
+                if (focusRow(rowIndex + 1)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+            } else if (e.key === 'ArrowUp') {
+                if (focusRow(rowIndex - 1)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                // Keep the cursor on the bill row; horizontal arrows must
+                // never move focus outside P11.
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }
+        }, true);
+    })();
+
     function setHistoryTodayFilter() {
         const today = getTodayISODate();
         const from = document.getElementById('history-date-from');

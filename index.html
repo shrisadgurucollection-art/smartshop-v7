@@ -3772,7 +3772,7 @@ button,input,select,textarea{touch-action:manipulation;}
         // If this is the current/new bill and another Waiting Bill exists,
         // X/ESC must not leave P08. The Waiting Bill must first be opened
         // and then Saved or Cancelled.
-        const otherWaitingBills = billTabs.filter(t => t.id !== activeTabId && isRealWaitingBill(t));
+        const otherWaitingBills = billTabs.filter(t => t.id !== activeTabId);
         if (otherWaitingBills.length > 0 && !smartshopActiveBillIsWaiting) {
             const firstWaiting = document.querySelector('#bill-header-waiting-tabs .bill-header-waiting-chip');
             if (firstWaiting) {
@@ -3839,9 +3839,10 @@ button,input,select,textarea{touch-action:manipulation;}
             persistData();
             renderBillTabsBar();
 
-            const remainingRealWaiting = billTabs.filter(t => isRealWaitingBill(t));
-            if (remainingRealWaiting.length > 0) {
-                switchBillTab(remainingRealWaiting[0].id);
+            const remainingWaitingBills = billTabs.filter(t => t.id !== activeTabId);
+            if (remainingWaitingBills.length > 0) {
+                smartshopActiveBillIsWaiting = true;
+                switchBillTab(remainingWaitingBills[0].id);
             } else {
                 hideModal('modal-bill');
                 setTimeout(() => focusMainNewBill(), 50);
@@ -3999,7 +4000,7 @@ button,input,select,textarea{touch-action:manipulation;}
         const headerTabs = document.getElementById('bill-header-waiting-tabs');
         if (headerTabs) {
             headerTabs.innerHTML = '';
-            const waitingTabs = billTabs.filter(tab => tab.id !== activeTabId && isRealWaitingBill(tab));
+            const waitingTabs = billTabs.filter(tab => tab.id !== activeTabId);
 
             waitingTabs.forEach(tab => {
                 const chip = document.createElement('button');
@@ -4108,11 +4109,10 @@ button,input,select,textarea{touch-action:manipulation;}
 
     function closeBillTab(tabId, e) {
         if(e) e.stopPropagation();
-        billTabs = billTabs.filter(t => t.id !== tabId || isRealWaitingBill(t));
+        billTabs = billTabs.filter(t => t.id !== tabId);
         if (activeTabId === tabId) {
             if (billTabs.length > 0) {
-                const next = billTabs.find(t => isRealWaitingBill(t)) || billTabs[billTabs.length - 1];
-                switchBillTab(next.id);
+                switchBillTab(billTabs[billTabs.length - 1].id);
             } else {
                 hideModal('modal-bill');
                 activeTabId = null;

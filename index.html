@@ -5810,7 +5810,7 @@ button,input,select,textarea{touch-action:manipulation;}
         // focus to the search box after a short delay. Enter on that row
         // must open P12; the row must not lose focus.
         setTimeout(() => {
-            if (fromM12 && !fromDailyDepositP17) {
+            if ((fromM12 && !fromDailyDepositP17) || fromDailyDepositP17) {
                 const firstBillRow = document.querySelector('#history-table-tbody tr[role="button"]');
                 if (firstBillRow) {
                     document.querySelectorAll('#history-table-tbody tr[role="button"]').forEach(r => r.classList.remove('selected'));

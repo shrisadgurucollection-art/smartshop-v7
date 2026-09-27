@@ -7650,6 +7650,38 @@ window.smartShopSetPageTitle = function(id, title, code){
 
 <script id="smartshop-main-icon-code-map">
 window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for Main Page navigation icons/cards. Existing P page codes are unchanged."};
+/* ===== P03 ESC DISPLAY FIX =====
+   Only P03 (Item History) is handled here. It closes visually and leaves
+   P02 (Item Master) underneath untouched. No other page/flow is changed.
+*/
+document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Escape') return;
+    const p03 = document.getElementById('modal-item-history');
+    if (!p03 || !p03.classList.contains('active')) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    e.__smartshopEscHandled = true;
+
+    p03.classList.remove('active');
+    p03.style.removeProperty('display');
+
+    if (Array.isArray(modalStack)) {
+        modalStack = modalStack.filter(id => id !== 'modal-item-history');
+    }
+    if (typeof refreshModalStack === 'function') {
+        refreshModalStack();
+    }
+
+    const p02 = document.getElementById('modal-saved-items');
+    if (p02 && p02.classList.contains('active')) {
+        const search = p02.querySelector('#master-item-search');
+        if (search) {
+            setTimeout(() => focusKeyboardControl(search), 30);
+        }
+    }
+}, true);
+
 </script>
 </body>
 

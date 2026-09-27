@@ -6926,7 +6926,11 @@ button,input,select,textarea{touch-action:manipulation;}
             document.activeElement?.id === 'main-bill-list' ||
             document.activeElement?.closest?.('#main-bill-list') ||
             document.activeElement?.id === 'main-stock' ||
-            document.activeElement?.closest?.('#main-stock')
+            document.activeElement?.closest?.('#main-stock') ||
+            (
+                document.getElementById('main-page')?.classList.contains('active') &&
+                !document.getElementById('modal-bill')?.classList.contains('active')
+            )
         );
         window.smartshopItemMasterRouteFromMain = openedFromMain;
         if (itemMasterModal) {
@@ -7972,16 +7976,14 @@ window.addEventListener('keydown', function(e) {
     }
 
     setTimeout(()=>{
-      const em13=
-        document.querySelector('[data-main-code="EM13"]') ||
-        document.querySelector('[data-page-code="EM13"]') ||
-        document.querySelector('[data-code="EM13"]') ||
-        document.getElementById('EM13') ||
-        document.querySelector('[data-main-icon-code="EM13"]') ||
-        document.querySelector('[data-main-icon-code="M13"]') ||
-        document.getElementById('main-stock');
+      // EM13 cursor must land on the actual Item Master card,
+      // not on the small EM13 label span.
+      const em13 = document.getElementById('main-stock');
       if(em13){
         if(em13.tabIndex<0) em13.tabIndex=0;
+        document.querySelectorAll('.menu-card.selected').forEach(el => {
+          if(el !== em13) el.classList.remove('selected');
+        });
         em13.focus({preventScroll:true});
         em13.classList.add('selected');
       }

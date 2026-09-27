@@ -5399,10 +5399,10 @@ button,input,select,textarea{touch-action:manipulation;}
         const savedDateTime = formatLocalDateTime(new Date());
         const existIndex = savedBills.findIndex(b => b.billNo === tab.billNo);
 
-        // Bill History serial number is assigned only when a new bill is
-        // actually saved. Waiting/open bill numbers are temporary and do not
-        // become the saved serial number.
-        // Example: first saved bill = 1, next saved bill = 2, then 3...
+        // Bill History uses the same sequential Bill Number series starting
+        // at 101. Waiting/open bill numbers are reserved in billTabs, while
+        // the saved Bill History keeps only the sequential saved number.
+        // Example: saved = 101, 102, 103; next new/waiting bill = 104.
         // If an old saved bill is being modified, keep its existing number.
         if (existIndex === -1) {
             const usedSavedSerials = new Set(
@@ -5410,7 +5410,7 @@ button,input,select,textarea{touch-action:manipulation;}
                     .map(b => parseInt(String(b?.billNo || '').replace(/^#/, ''), 10))
                     .filter(Number.isFinite)
             );
-            let savedSerial = 1;
+            let savedSerial = 101;
             while (usedSavedSerials.has(savedSerial)) savedSerial++;
             tab.billNo = '#' + savedSerial;
         }

@@ -5751,11 +5751,26 @@ button,input,select,textarea{touch-action:manipulation;}
         // Exact M12 -> P11 entry. Remember that P11 was opened from M12,
         // so ESC on P11 returns only to M12 and never to an older page.
         const activeEl = document.activeElement;
+        const reportsParent = document.getElementById('modal-reports');
+        const fromDailyDepositP17 = reportsParent?.dataset?.route === 'daily-deposit-main';
         const fromM12 = !!(
             activeEl?.id === 'main-bill-list' ||
             activeEl?.closest?.('#main-bill-list')
         );
-        if (fromM12) {
+
+        // M18 Daily Deposit -> P17 -> any report card must stay inside
+        // the Daily Deposit route. This prevents P17 work from being
+        // reclassified as the normal M12 -> P11 Bill History route.
+        if (fromDailyDepositP17) {
+            const historyRouteModal = document.getElementById('modal-history');
+            if (historyRouteModal) {
+                historyRouteModal.dataset.route = 'daily-deposit-p17';
+                historyRouteModal.dataset.returnToP17 = '1';
+                historyRouteModal.dataset.returnFocusId = activeEl?.id || 'main-total-sales';
+            }
+        }
+
+        if (fromM12 && !fromDailyDepositP17) {
             billHistoryOpenedFromM12 = true;
             // Central navigation: M12 is the exact parent control for this route.
             const m12 = document.getElementById('main-bill-list');
@@ -5772,7 +5787,7 @@ button,input,select,textarea{touch-action:manipulation;}
         // CENTRAL ROUTE MARKER: Bill History opened from M12 owns its own
         // reverse route. Generic pageReturnStack must never decide this route.
         const historyRouteModal = document.getElementById('modal-history');
-        if (historyRouteModal) {
+        if (historyRouteModal && !fromDailyDepositP17) {
             historyRouteModal.dataset.route = 'bill-history';
             historyRouteModal.dataset.returnToM12 = fromM12 ? '1' : '0';
         }

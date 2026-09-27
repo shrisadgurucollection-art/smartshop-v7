@@ -5823,6 +5823,7 @@ button,input,select,textarea{touch-action:manipulation;}
             tr.tabIndex = 0;
             tr.setAttribute('role','button');
             tr.style.cursor='pointer';
+            tr.dataset.savedIdx = String(realIdx);
             tr.innerHTML = '<td><b style="color:#0b4f8a;">'+b.billNo+'</b></td>'+
                 '<td>'+formatSmartShopBillDate(b.date)+'</td>'+
                 '<td>'+String(b.custName || 'ग्राहक')+'</td>'+
@@ -5834,7 +5835,7 @@ button,input,select,textarea{touch-action:manipulation;}
             const selectAndOpen = () => {
                 tbody.querySelectorAll('tr').forEach(r=>r.classList.remove('selected'));
                 tr.classList.add('selected');
-                window.smartshopGrossProfitSelectedBill = realIdx;
+                window.smartshopGrossProfitSelectedBill = String(realIdx);
                 window.smartshopGrossProfitActive = true;
                 billHistoryReturnContext = null;
                 itemHistoryBillContext = null;
@@ -8411,8 +8412,8 @@ window.addEventListener('keydown', function(e) {
         renderTodayGrossProfit();
         setTimeout(()=>{
           const rows=document.querySelectorAll('#gross-profit-table-tbody tr[role="button"]');
-          const idx=Number(window.smartshopGrossProfitSelectedBill);
-          const row=rows[idx];
+          const idx=String(window.smartshopGrossProfitSelectedBill ?? '');
+          const row=Array.from(rows).find(r=>String(r.dataset.savedIdx||'')===idx);
           if(row){
             rows.forEach(r=>r.classList.remove('selected'));
             row.classList.add('selected');

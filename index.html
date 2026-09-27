@@ -3875,12 +3875,14 @@ button,input,select,textarea{touch-action:manipulation;}
             persistData();
             renderBillTabsBar();
 
-            const remainingWaitingBills = billTabs.filter(t => t.id !== activeTabId);
+            const remainingWaitingBills = billTabs.slice();
             if (remainingWaitingBills.length > 0) {
+                // A previous Waiting Bill still exists. Never return to P00.
                 smartshopActiveBillIsWaiting = true;
-                switchBillTab(remainingWaitingBills[0].id);
+                switchBillTab(remainingWaitingBills[remainingWaitingBills.length - 1].id, true);
             } else {
                 hideModal('modal-bill');
+                smartshopActiveBillIsWaiting = false;
                 setTimeout(() => focusMainNewBill(), 50);
             }
             return;
@@ -3890,8 +3892,18 @@ button,input,select,textarea{touch-action:manipulation;}
         // rolled back when a bill is cancelled/closed.
         if (tabIndex >= 0) billTabs.splice(tabIndex, 1);
 
-        activeTabId = billTabs.length ? billTabs[billTabs.length - 1].id : null;
+        const remainingWaitingAfterCancel = billTabs.slice();
+        if (remainingWaitingAfterCancel.length > 0) {
+            activeTabId = remainingWaitingAfterCancel[remainingWaitingAfterCancel.length - 1].id;
+            smartshopActiveBillIsWaiting = true;
+            persistData();
+            renderBillTabsBar();
+            switchBillTab(activeTabId, true);
+            return;
+        }
 
+        activeTabId = null;
+        smartshopActiveBillIsWaiting = false;
         persistData();
         renderBillTabsBar();
 

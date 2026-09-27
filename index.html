@@ -3973,7 +3973,10 @@ button,input,select,textarea{touch-action:manipulation;}
             if (Number.isFinite(n)) used.add(n);
         });
 
-        let n = Math.max(Number(nextBillSeq) || 101, 101);
+        // Always use the first missing serial number.
+        // This prevents gaps in Bill History when a previously opened
+        // bill is cancelled before saving.
+        let n = 101;
         while (used.has(n)) n++;
         return n;
     }

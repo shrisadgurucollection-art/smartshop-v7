@@ -6946,24 +6946,34 @@ button,input,select,textarea{touch-action:manipulation;}
         editingMasterItemId = null;
         itemMasterBillRowIndex = null;
         itemMasterOriginBillRowIndex = null;
+
         const itemMasterModal = document.getElementById('modal-saved-items');
+        const em13 = document.getElementById('main-stock');
+
+        // EM13 is the ONLY Main-origin Item Master route.
+        // Do not classify M12/Bill History or any other page as Item Master Main.
         const openedFromMain = !!(
-            document.activeElement?.id === 'main-bill-list' ||
-            document.activeElement?.closest?.('#main-bill-list') ||
-            document.activeElement?.id === 'main-stock' ||
-            document.activeElement?.closest?.('#main-stock') ||
+            em13 &&
             (
-                document.getElementById('main-page')?.classList.contains('active') &&
-                !document.getElementById('modal-bill')?.classList.contains('active')
+                document.activeElement === em13 ||
+                document.activeElement?.closest?.('#main-stock') ||
+                (
+                    document.getElementById('main-page')?.classList.contains('active') &&
+                    em13.classList.contains('selected')
+                )
             )
         );
+
         window.smartshopItemMasterRouteFromMain = openedFromMain;
+
         if (itemMasterModal) {
             itemMasterModal.dataset.route = openedFromMain ? 'item-master-main' : 'item-master-generic';
             itemMasterModal.dataset.returnToMain = openedFromMain ? '1' : '0';
         }
+
         const search = document.getElementById('master-item-search');
         if (search) search.value = '';
+
         renderMasterItemsTable();
         showModal('modal-saved-items');
         setTimeout(() => search?.focus(), 80);

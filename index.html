@@ -7026,6 +7026,15 @@ button,input,select,textarea{touch-action:manipulation;}
             reports.dataset.route = 'daily-deposit-main';
             reports.dataset.returnToDailyDeposit = '1';
             reports.dataset.returnFocusId = reportFocusId;
+
+            // P17 child route: remember the exact P17 card so that
+            // History/Report work returns to that same card.
+            const history = document.getElementById('modal-history');
+            if (history) {
+                history.dataset.route = 'daily-deposit-p17';
+                history.dataset.returnToP17 = '1';
+                history.dataset.returnFocusId = reportFocusId;
+            }
         }
         rememberPageReturn(
             'modal-reports',
@@ -8140,6 +8149,47 @@ window.addEventListener('keydown', function(e) {
          document.getElementById('modal-saved-items')?.dataset.returnToMain==='1' &&
          typeof window.smartshopItemHistoryEscP02ToMain==='function'){
         return !!window.smartshopItemHistoryEscP02ToMain();
+      }
+
+      // Daily Deposit P17 child route: History -> P17.
+      // This is isolated to M18 -> P17 -> History and does not affect
+      // normal Bill History / Item Master / New Bill routes.
+      if(m.id==='modal-history' &&
+         get('modal-history')?.dataset.route==='daily-deposit-p17'){
+        const history = get('modal-history');
+        const reports = get('modal-reports');
+        const focusId = history?.dataset?.returnFocusId || 'main-total-sales';
+
+        if(history){
+          history.classList.remove('active');
+          history.dataset.route='';
+          history.dataset.returnToP17='0';
+          history.dataset.returnFocusId='';
+        }
+        if(Array.isArray(window.modalStack)){
+          window.modalStack = window.modalStack.filter(id=>id!=='modal-history');
+        }
+        if(typeof window.refreshModalStack==='function') window.refreshModalStack();
+
+        if(reports){
+          reports.dataset.route='daily-deposit-main';
+          reports.dataset.returnToDailyDeposit='1';
+          reports.classList.add('active');
+          if(Array.isArray(window.modalStack)){
+            window.modalStack=window.modalStack.filter(id=>id!=='modal-reports');
+            window.modalStack.push('modal-reports');
+          }
+          if(typeof window.refreshModalStack==='function') window.refreshModalStack();
+        }
+
+        setTimeout(()=>{
+          const focusTarget=get(focusId);
+          if(focusTarget){
+            if(typeof window.focusKeyboardControl==='function') window.focusKeyboardControl(focusTarget);
+            else focusTarget.focus?.({preventScroll:true});
+          }
+        },60);
+        return true;
       }
 
       // Daily Deposit (M18) -> P17 exact return route.

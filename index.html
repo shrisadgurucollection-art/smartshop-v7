@@ -8067,7 +8067,31 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
 
       if(m.id==='modal-saved-items' &&
          typeof window.closeItemMasterModal==='function'){
-        return !!window.closeItemMasterModal();
+        // P02 repeated-open ESC guard: always consume ESC at P02 level.
+        try {
+          const result = window.closeItemMasterModal();
+          const p02 = get('modal-saved-items');
+          if (p02?.classList.contains('active')) {
+            p02.classList.remove('active');
+            if (Array.isArray(window.modalStack)) {
+              window.modalStack = window.modalStack.filter(id => id !== 'modal-saved-items');
+            }
+            if (typeof window.refreshModalStack === 'function') {
+              window.refreshModalStack();
+            }
+          }
+          return result !== false;
+        } catch (_) {
+          const p02 = get('modal-saved-items');
+          if (p02) p02.classList.remove('active');
+          if (Array.isArray(window.modalStack)) {
+            window.modalStack = window.modalStack.filter(id => id !== 'modal-saved-items');
+          }
+          if (typeof window.refreshModalStack === 'function') {
+            window.refreshModalStack();
+          }
+          return true;
+        }
       }
 
       // Explicit Bill History route: after P12 -> P11, the next ESC is

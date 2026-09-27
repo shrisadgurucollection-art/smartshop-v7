@@ -6860,14 +6860,38 @@ button,input,select,textarea{touch-action:manipulation;}
                 modalFocusReturn.delete('modal-saved-items');
             }
 
+            // Re-render the active Bill first, then obtain a NEW row element
+            // and focus it. This is important for the second/newer Bill:
+            // renderBillItemsTable() replaces the row DOM node.
             setTimeout(() => {
+                if (savedReturnTab) activeTabId = savedReturnTab.id;
                 renderBillItemsTable();
-                const row = document.getElementById('row-name-' + returnRowIndex);
-                if (row) {
-                    focusKeyboardControl(row);
-                    row.select?.();
-                }
-            }, 100);
+
+                setTimeout(() => {
+                    const billModal = document.getElementById('modal-bill');
+                    const row = document.getElementById('row-name-' + returnRowIndex);
+
+                    if (billModal) billModal.classList.add('active');
+
+                    if (row) {
+                        row.scrollIntoView({block:'nearest', inline:'nearest'});
+                        focusKeyboardControl(row);
+                        row.select?.();
+                        return;
+                    }
+
+                    // If the row was not yet materialized, retry once after
+                    // the bill table has completed its render.
+                    setTimeout(() => {
+                        const retryRow = document.getElementById('row-name-' + returnRowIndex);
+                        if (retryRow) {
+                            retryRow.scrollIntoView({block:'nearest', inline:'nearest'});
+                            focusKeyboardControl(retryRow);
+                            retryRow.select?.();
+                        }
+                    }, 80);
+                }, 20);
+            }, 20);
             return;
         }
 

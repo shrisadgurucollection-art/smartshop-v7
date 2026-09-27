@@ -7474,7 +7474,7 @@ async function parseItemListPDF(file){
       // The uploaded Smart Shop PDF format is: Item Name | Size | Quantity | Rate.
       // Find the final two numeric cells in their left-to-right order.
       const numeric=[];
-      cells.forEach((c,i)=>{ if(/^?\s*\d+(?:[,.]\d+)?$/.test(c)) numeric.push(i); });
+      cells.forEach((c,i)=>{ if(/^\s*\d+(?:[,.]\d+)?$/.test(c)) numeric.push(i); });
       if(numeric.length<2) continue;
       const qtyIdx=numeric[numeric.length-2], rateIdx=numeric[numeric.length-1];
       if(rateIdx<=qtyIdx || qtyIdx<1) continue;

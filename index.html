@@ -4458,16 +4458,26 @@ button,input,select,textarea{touch-action:manipulation;}
         // the actually active modal. Do not move focus back to the Bill here.
         renderMasterItemsTable();
 
-        setTimeout(() => {
+        // P02 must receive a fresh keyboard cursor every time it opens,
+        // including the 2nd/3rd time from a different Bill.
+        const focusP02 = () => {
             const modal = Array.from(document.querySelectorAll('.modal')).find(
                 m => m.id === 'modal-saved-items' && m.classList.contains('active')
             );
             const activeFilter = modal?.querySelector('input#master-item-search');
             if (modal && activeFilter) {
-                activeFilter.focus();
+                activeFilter.focus({preventScroll:true});
                 activeFilter.select();
+                return true;
             }
-        }, 100);
+            return false;
+        };
+
+        setTimeout(() => {
+            if (!focusP02()) {
+                setTimeout(() => focusP02(), 80);
+            }
+        }, 120);
     }
 
     function selectMasterItemForBillRow(item) {

@@ -1679,6 +1679,9 @@ button,input,select,textarea{touch-action:manipulation;}
                     <div id="main-calculator" class="modern-feature-card menu-card" tabindex="0" role="button" aria-label="कॅल्क्युलेटर" onclick="openCalculator()">
                         <div class="modern-feature-left"><div class="modern-feature-icon" style="background:#0891b2;">🧮</div><div><div class="modern-feature-title">कॅल्क्युलेटर<span class="smartshop-main-icon-code" data-main-icon-code="M17">M17</span></div><div class="modern-feature-sub">जलद गणना करा (F12)</div></div></div><span class="modern-feature-arrow">›</span>
                     </div>
+                    <div id="main-today-gross-profit" class="modern-feature-card menu-card" tabindex="0" role="button" aria-label="Today Gross and Profit" onclick="openTodayGrossProfit()">
+                        <div class="modern-feature-left"><div class="modern-feature-icon" style="background:#16a34a;">📊</div><div><div class="modern-feature-title">Today Gross and Profit<span class="smartshop-main-icon-code" data-main-icon-code="EM23">EM23</span></div><div class="modern-feature-sub">आजचे बिल, विक्री व नफा</div></div></div><span class="modern-feature-arrow">›</span>
+                    </div>
                     <div id="main-daily-deposit" class="modern-feature-card" role="button" tabindex="0" onclick="openReportsModal()">
                         <div class="modern-feature-left"><div class="modern-feature-icon" style="background:#e11d48;">💰</div><div><div class="modern-feature-title">दैनिक जमा<span class="smartshop-main-icon-code" data-main-icon-code="M18">M18</span></div><div class="modern-feature-sub">दैनंदिन जमा नोंद व रिपोर्ट</div></div></div><span class="modern-feature-arrow">›</span>
                     </div>
@@ -2090,6 +2093,35 @@ button,input,select,textarea{touch-action:manipulation;}
                     </thead>
                     <tbody id="customers-table-tbody"></tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modal-today-gross-profit">
+    <div class="modal-content fullscreen-modal history-fullscreen-content">
+        <div class="modal-header history-main-header">
+            <h3>📊 Today Gross and Profit<span class="smartshop-page-code-header-badge" data-page-code="P23">P23</span></h3>
+            <button class="close-btn" onclick="closeTodayGrossProfit()">✕</button>
+        </div>
+        <div class="modal-body history-fullscreen-body">
+            <div class="history-search-panel">
+                <div class="history-search-box"><span class="history-search-icon">🔍</span><input type="text" id="gross-profit-search-input" placeholder="बिल नंबर / ग्राहक नाव / मोबाईल नंबर शोधा..." autocomplete="off"></div>
+                <div class="history-date-field"><label>दिनांक पासून</label><input type="text" id="gross-profit-date-from" class="smartshop-date-input" inputmode="numeric" maxlength="10" placeholder="DD-MM-YYYY" autocomplete="off"></div>
+                <div class="history-date-field"><label>दिनांक पर्यंत</label><input type="text" id="gross-profit-date-to" class="smartshop-date-input" inputmode="numeric" maxlength="10" placeholder="DD-MM-YYYY" autocomplete="off"></div>
+                <button class="history-search-button" type="button" tabindex="0" id="gross-profit-search-button">🔍 शोधा</button>
+            </div>
+            <div class="table-container history-table-container">
+                <table class="custom-table history-main-table">
+                    <thead><tr><th>बिल नं.</th><th>तारीख / वेळ</th><th>ग्राहक</th><th>Qty</th><th>एकूण विक्री</th><th>Cost</th><th>Profit</th><th>Profit %</th></tr></thead>
+                    <tbody id="gross-profit-table-tbody"></tbody>
+                </table>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px;">
+                <div style="padding:16px;border:1px solid #bfdbfe;border-radius:14px;background:#eff6ff;text-align:center;"><div style="font-weight:800;color:#1d4ed8;">एकूण बिलांची संख्या</div><strong id="gp-total-bills" style="font-size:24px;color:#1d4ed8;">0</strong></div>
+                <div style="padding:16px;border:1px solid #a7f3d0;border-radius:14px;background:#ecfdf5;text-align:center;"><div style="font-weight:800;color:#047857;">एकूण विक्री</div><strong id="gp-total-sales" style="font-size:24px;color:#047857;">₹ 0</strong></div>
+                <div style="padding:16px;border:1px solid #bbf7d0;border-radius:14px;background:#f0fdf4;text-align:center;"><div style="font-weight:800;color:#15803d;">एकूण Profit</div><strong id="gp-total-profit" style="font-size:24px;color:#15803d;">₹ 0</strong></div>
+                <div style="padding:16px;border:1px solid #ddd6fe;border-radius:14px;background:#f5f3ff;text-align:center;"><div style="font-weight:800;color:#6d28d9;">सरासरी Profit %</div><strong id="gp-profit-percent" style="font-size:24px;color:#6d28d9;">0.00%</strong><small style="display:block;color:#64748b;">Cost च्या आधारावर</small></div>
             </div>
         </div>
     </div>
@@ -5747,6 +5779,123 @@ button,input,select,textarea{touch-action:manipulation;}
         });
     }
 
+    function getTodayGrossProfitMetrics(bills) {
+        let sales = 0, cost = 0;
+        bills.forEach(b => {
+            sales += Number(b.finalBill || 0);
+            (b.items || []).forEach(item => {
+                const master = masterItems.find(m => String(m.id) === String(item.itemId));
+                cost += (Number(master?.cost) || 0) * (Number(item.qty) || 0);
+            });
+        });
+        const profit = sales - cost;
+        const profitPct = cost > 0 ? (profit / cost) * 100 : 0;
+        return {sales, cost, profit, profitPct};
+    }
+
+    function renderTodayGrossProfit() {
+        const tbody = document.getElementById('gross-profit-table-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const searchText = (document.getElementById('gross-profit-search-input')?.value || '').trim().toLowerCase();
+        const from = getSmartShopDateField(document.getElementById('gross-profit-date-from'));
+        const to = getSmartShopDateField(document.getElementById('gross-profit-date-to'));
+
+        const bills = savedBills.filter(b => {
+            const d = b.isoDate || '';
+            const dateOK = (!from || d >= from) && (!to || d <= to);
+            const hay = [b.billNo,b.custName,b.custMobile,b.mode].map(v=>String(v||'').toLowerCase()).join(' ');
+            return dateOK && (!searchText || hay.includes(searchText));
+        });
+
+        bills.forEach(b => {
+            const realIdx = savedBills.findIndex(sb => String(sb.id) === String(b.id) || String(sb.billNo) === String(b.billNo));
+            if (realIdx < 0) return;
+            const billCost = (b.items || []).reduce((sum,item) => {
+                const master = masterItems.find(m => String(m.id) === String(item.itemId));
+                return sum + (Number(master?.cost) || 0) * (Number(item.qty) || 0);
+            }, 0);
+            const sales = Number(b.finalBill || 0);
+            const profit = sales - billCost;
+            const pct = billCost > 0 ? (profit / billCost) * 100 : 0;
+            const tr = document.createElement('tr');
+            tr.tabIndex = 0;
+            tr.setAttribute('role','button');
+            tr.style.cursor='pointer';
+            tr.innerHTML = '<td><b style="color:#0b4f8a;">'+b.billNo+'</b></td>'+
+                '<td>'+formatSmartShopBillDate(b.date)+'</td>'+
+                '<td>'+String(b.custName || 'ग्राहक')+'</td>'+
+                '<td>'+((b.items||[]).reduce((s,i)=>s+(Number(i.qty)||0),0))+'</td>'+
+                '<td style="color:#047857;font-weight:900;">'+sales.toFixed(0)+'</td>'+
+                '<td>'+billCost.toFixed(0)+'</td>'+
+                '<td style="color:#15803d;font-weight:900;">'+profit.toFixed(0)+'</td>'+
+                '<td style="color:#6d28d9;font-weight:900;">'+pct.toFixed(2)+'%</td>';
+            const selectAndOpen = () => {
+                tbody.querySelectorAll('tr').forEach(r=>r.classList.remove('selected'));
+                tr.classList.add('selected');
+                window.smartshopGrossProfitSelectedBill = realIdx;
+                window.smartshopGrossProfitActive = true;
+                billHistoryReturnContext = null;
+                itemHistoryBillContext = null;
+                openBillDetailModal(realIdx);
+            };
+            tr.addEventListener('click', selectAndOpen);
+            tr.addEventListener('keydown', e => {
+                if(e.key==='Enter'){
+                    e.preventDefault();
+                    selectAndOpen();
+                }
+            });
+            tbody.appendChild(tr);
+        });
+
+        const metrics = getTodayGrossProfitMetrics(bills);
+        const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+        set('gp-total-bills',bills.length);
+        set('gp-total-sales','₹ '+metrics.sales.toFixed(0));
+        set('gp-total-profit','₹ '+metrics.profit.toFixed(0));
+        set('gp-profit-percent',metrics.profitPct.toFixed(2)+'%');
+
+        if(!bills.length) tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;">निवडलेल्या तारखेची बिले नाहीत</td></tr>';
+    }
+
+    function openTodayGrossProfit() {
+        const modal=document.getElementById('modal-today-gross-profit');
+        if(!modal) return;
+        window.smartshopGrossProfitActive=true;
+        window.smartshopGrossProfitSelectedBill=null;
+        const today=getTodayISODate();
+        setSmartShopDateField(document.getElementById('gross-profit-date-from'),today);
+        setSmartShopDateField(document.getElementById('gross-profit-date-to'),today);
+        const search=document.getElementById('gross-profit-search-input');
+        if(search) search.value='';
+        modal.dataset.route='today-gross-profit-main';
+        modal.classList.add('active');
+        modalStack=modalStack.filter(id=>id!=='modal-today-gross-profit');
+        modalStack.push('modal-today-gross-profit');
+        refreshModalStack();
+        renderTodayGrossProfit();
+        setTimeout(()=>{
+            const row=document.querySelector('#gross-profit-table-tbody tr[role="button"]');
+            if(row){row.classList.add('selected');row.focus({preventScroll:true});}
+            else search?.focus({preventScroll:true});
+        },50);
+    }
+
+    function closeTodayGrossProfit() {
+        const modal=document.getElementById('modal-today-gross-profit');
+        if(modal) modal.classList.remove('active');
+        modalStack=modalStack.filter(id=>id!=='modal-today-gross-profit');
+        refreshModalStack();
+        window.smartshopGrossProfitActive=false;
+        window.smartshopGrossProfitSelectedBill=null;
+        const main=document.getElementById('main-today-gross-profit');
+        if(main){
+            setTimeout(()=>{focusKeyboardControl(main);main.classList.add('selected');},40);
+        }
+    }
+
     function openHistoryModal(paymentType = null) {
         // Exact M12 -> P11 entry. Remember that P11 was opened from M12,
         // so ESC on P11 returns only to M12 and never to an older page.
@@ -6087,9 +6236,11 @@ button,input,select,textarea{touch-action:manipulation;}
         // ESC must always return to P11 first. Never fall through to Main.
         detailModal.dataset.returnToBillHistory = billHistoryReturnContext ? '1' : '0';
         detailModal.dataset.returnToItemHistory = itemHistoryBillContext ? '1' : '0';
-        detailModal.dataset.route = billHistoryReturnContext
-            ? 'bill-history-detail'
-            : (itemHistoryBillContext ? 'item-history-detail' : 'generic-detail');
+        detailModal.dataset.returnToTodayGrossProfit = window.smartshopGrossProfitActive ? '1' : '0';
+        detailModal.dataset.route = window.smartshopGrossProfitActive
+            ? 'today-gross-profit-detail'
+            : (billHistoryReturnContext ? 'bill-history-detail'
+            : (itemHistoryBillContext ? 'item-history-detail' : 'generic-detail'));
         detailModal.setAttribute('tabindex','-1');
         detailModal.onkeydown = function(e){
             if(e.key === 'Enter' && !e.ctrlKey && !e.altKey && !e.shiftKey){
@@ -6436,6 +6587,7 @@ button,input,select,textarea{touch-action:manipulation;}
             // not through Item History.
             const fromBillHistory = !!billHistoryReturnContext;
             const fromItemHistory = !!itemHistoryBillContext;
+            const fromTodayGrossProfit = window.smartshopGrossProfitActive === true;
 
             billEditReturnToDetail = {
                 itemId: String(itemHistoryBillContext?.itemId || itemHistorySelectedItemId || ''),
@@ -6444,7 +6596,7 @@ button,input,select,textarea{touch-action:manipulation;}
                     ? Number(billHistoryReturnContext.savedBillIdx ?? realIdx)
                     : Number(itemHistoryBillContext?.historyIdx ?? realIdx),
                 billNo: String(bill.billNo || ''),
-                returnSource: fromBillHistory ? 'bill-history' : (fromItemHistory ? 'item-history' : 'bill-history')
+                returnSource: fromTodayGrossProfit ? 'today-gross-profit' : (fromBillHistory ? 'bill-history' : (fromItemHistory ? 'item-history' : 'bill-history'))
             };
 
             // Keep the originating context for the exact ESC sequence.
@@ -8242,6 +8394,37 @@ window.addEventListener('keydown', function(e) {
        * Exact business return contexts have priority because they carry
        * selected bill/item information that a generic close must preserve.
        */
+      if(m.id==='modal-bill-detail' &&
+         get('modal-bill-detail')?.dataset.route==='today-gross-profit-detail' &&
+         typeof window.smartshopGrossProfitActive !== 'undefined' &&
+         window.smartshopGrossProfitActive){
+        const detail=get('modal-bill-detail');
+        const report=get('modal-today-gross-profit');
+        if(detail) detail.classList.remove('active');
+        if(Array.isArray(window.modalStack)) window.modalStack=window.modalStack.filter(id=>id!=='modal-bill-detail');
+        if(report){
+          report.classList.add('active');
+          report.dataset.route='today-gross-profit-main';
+          if(Array.isArray(window.modalStack)) window.modalStack.push('modal-today-gross-profit');
+        }
+        if(typeof window.refreshModalStack==='function') window.refreshModalStack();
+        renderTodayGrossProfit();
+        setTimeout(()=>{
+          const rows=document.querySelectorAll('#gross-profit-table-tbody tr[role="button"]');
+          const idx=Number(window.smartshopGrossProfitSelectedBill);
+          const row=rows[idx];
+          if(row){
+            rows.forEach(r=>r.classList.remove('selected'));
+            row.classList.add('selected');
+            focusKeyboardControl(row);
+          } else {
+            const first=rows[0];
+            if(first){first.classList.add('selected');focusKeyboardControl(first);}
+          }
+        },60);
+        return true;
+      }
+
       if(m.id==='modal-bill-detail'){
         // Bill History keeps its existing working route.
         if(typeof billHistoryReturnContext !== 'undefined' &&
@@ -8340,6 +8523,25 @@ window.addEventListener('keydown', function(e) {
             if(typeof window.focusKeyboardControl==='function') window.focusKeyboardControl(daily);
             else daily.focus?.({preventScroll:true});
             daily.classList.add('selected');
+          },40);
+        }
+        return true;
+      }
+
+      // Today Gross and Profit (EM23) -> P23 exact return route.
+      if(m.id==='modal-today-gross-profit' &&
+         get('modal-today-gross-profit')?.dataset.route==='today-gross-profit-main'){
+        const report=get('modal-today-gross-profit');
+        if(report) report.classList.remove('active');
+        if(Array.isArray(window.modalStack)) window.modalStack=window.modalStack.filter(id=>id!=='modal-today-gross-profit');
+        if(typeof window.refreshModalStack==='function') window.refreshModalStack();
+        window.smartshopGrossProfitActive=false;
+        window.smartshopGrossProfitSelectedBill=null;
+        const main=get('main-today-gross-profit');
+        if(main){
+          setTimeout(()=>{
+            focusKeyboardControl(main);
+            main.classList.add('selected');
           },40);
         }
         return true;
@@ -8540,6 +8742,20 @@ window.addEventListener('keydown', function(e) {
     }
   }, true);
 })();
+<script id="smartshop-today-gross-profit-keyboard">
+(function(){
+'use strict';
+function active(){const m=document.getElementById('modal-today-gross-profit');return !!(m?.classList.contains('active')&&m.dataset.route==='today-gross-profit-main');}
+function rows(){return Array.from(document.querySelectorAll('#gross-profit-table-tbody tr[role="button"]'));}
+function focusRow(i){const a=rows();if(!a.length)return false;const n=Math.max(0,Math.min(i,a.length-1));a.forEach(r=>r.classList.remove('selected'));a[n].classList.add('selected');window.smartshopGrossProfitSelectedBill=Array.from(document.querySelectorAll('#gross-profit-table-tbody tr[role="button"]')).indexOf(a[n]);focusKeyboardControl(a[n]);a[n].scrollIntoView({block:'nearest'});return true;}
+window.addEventListener('keydown',function(e){
+if(!active())return;
+const r=rows(), t=e.target, idx=r.indexOf(t);
+if((e.key==='ArrowDown'||e.key==='ArrowUp')&&idx>=0){if(focusRow(idx+(e.key==='ArrowDown'?1:-1))){e.preventDefault();e.stopImmediatePropagation();}}
+else if(e.key==='Enter'&&idx>=0){e.preventDefault();t.click();e.stopImmediatePropagation();}
+},true);
+})();
+</script>
 </script>
 
 </html>

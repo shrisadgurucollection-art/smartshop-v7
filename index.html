@@ -5943,6 +5943,18 @@ button,input,select,textarea{touch-action:manipulation;}
               setTimeout(()=>row.classList.add('selected'),20);
             } else search?.focus({preventScroll:true});
         },50);
+        // Keep P23 keyboard focus on the first Bill row after all modal
+        // focus-restoration handlers have finished.
+        setTimeout(()=>{
+            const active=document.getElementById('modal-today-gross-profit');
+            const first=document.querySelector('#gross-profit-table-tbody tr[role="button"]');
+            if(active?.classList.contains('active') && active.dataset.route==='today-gross-profit-main' && first){
+                first.classList.add('selected');
+                window.smartshopGrossProfitSelectedBill=first.dataset.savedIdx || '';
+                if(typeof focusKeyboardControl==='function') focusKeyboardControl(first);
+                else first.focus({preventScroll:true});
+            }
+        },260);
     }
 
     function closeTodayGrossProfit() {
@@ -8832,11 +8844,17 @@ if(e.key==='Enter'){
   }
   if(t?.id==='gross-profit-search-button'){
     renderTodayGrossProfit();
+    e.preventDefault();e.stopImmediatePropagation();
     requestAnimationFrame(()=>{
       const first=rows()[0];
       if(first) focusRow(0);
     });
-    e.preventDefault();e.stopImmediatePropagation();
+    setTimeout(()=>{
+      if(active()){
+        const first=rows()[0];
+        if(first) focusRow(0);
+      }
+    },120);
     return;
   }
   if(idx>=0){e.preventDefault();t.click();e.stopImmediatePropagation();return;}

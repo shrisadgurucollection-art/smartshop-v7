@@ -1369,6 +1369,11 @@ button,input,select,textarea{touch-action:manipulation;}
 #modal-today-gross-profit .history-main-table tbody td{font-size:16px!important;padding:7px 8px!important}
 #modal-today-gross-profit .history-table-container{margin-top:0!important}
 #modal-today-gross-profit .history-fullscreen-body>div[style*="grid-template-columns"]{margin-top:10px!important;gap:10px!important}
+</style><style id="p23-bill-row-edit-focus">
+#modal-today-gross-profit #gross-profit-table-tbody tr[role="button"]{cursor:pointer;outline:none}
+#modal-today-gross-profit #gross-profit-table-tbody tr.selected{background:#fff7c7!important;outline:3px solid #f4c400!important;outline-offset:-2px!important}
+#modal-today-gross-profit #gross-profit-table-tbody tr.selected td:first-child b{color:#0b4f8a!important;font-weight:900!important}
+#modal-today-gross-profit #gross-profit-table-tbody tr:focus-visible{outline:3px solid #f4c400!important;outline-offset:-2px!important}
 </style></head>
 <body>
 
@@ -8804,7 +8809,7 @@ window.addEventListener('keydown', function(e) {
 'use strict';
 function active(){const m=document.getElementById('modal-today-gross-profit');return !!(m?.classList.contains('active')&&m.dataset.route==='today-gross-profit-main');}
 function rows(){return Array.from(document.querySelectorAll('#gross-profit-table-tbody tr[role="button"]'));}
-function focusRow(i){const a=rows();if(!a.length)return false;const n=Math.max(0,Math.min(i,a.length-1));a.forEach(r=>r.classList.remove('selected'));a[n].classList.add('selected');window.smartshopGrossProfitSelectedBill=Array.from(document.querySelectorAll('#gross-profit-table-tbody tr[role="button"]')).indexOf(a[n]);focusKeyboardControl(a[n]);a[n].scrollIntoView({block:'nearest'});return true;}
+function focusRow(i){const a=rows();if(!a.length)return false;const n=Math.max(0,Math.min(i,a.length-1));a.forEach(r=>r.classList.remove('selected'));const row=a[n];row.classList.add('selected');window.smartshopGrossProfitSelectedBill=row.dataset.savedIdx||'';if(typeof focusKeyboardControl==='function')focusKeyboardControl(row);else row.focus({preventScroll:true});row.scrollIntoView({block:'nearest'});return true;}
 window.addEventListener('keydown',function(e){
 if(!active())return;
 const r=rows(), t=e.target, idx=r.indexOf(t);

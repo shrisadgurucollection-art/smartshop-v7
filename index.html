@@ -5503,7 +5503,14 @@ button,input,select,textarea{touch-action:manipulation;}
             }
         }
 
-        createNewBillTab();
+        // Do not automatically create another bill after Save.
+        // A new bill must be explicitly requested with F2.
+        smartshopActiveBillIsWaiting = false;
+        activeTabId = null;
+        renderBillTabsBar();
+        persistData();
+        hideModal('modal-bill');
+        setTimeout(() => focusMainNewBill(), 80);
     }
 
     // SMARTSHOP_UNIFIED_DATE_FORMAT_V1: DD-MM-YYYY everywhere; 0 + Enter = current date.

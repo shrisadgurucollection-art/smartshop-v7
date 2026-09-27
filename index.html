@@ -5398,6 +5398,23 @@ button,input,select,textarea{touch-action:manipulation;}
         const shouldPrint = document.getElementById('pop-print-checkbox').checked;
         const savedDateTime = formatLocalDateTime(new Date());
         const existIndex = savedBills.findIndex(b => b.billNo === tab.billNo);
+
+        // Bill History serial number is assigned only when a new bill is
+        // actually saved. Waiting/open bill numbers are temporary and do not
+        // become the saved serial number.
+        // Example: first saved bill = 1, next saved bill = 2, then 3...
+        // If an old saved bill is being modified, keep its existing number.
+        if (existIndex === -1) {
+            const usedSavedSerials = new Set(
+                savedBills
+                    .map(b => parseInt(String(b?.billNo || '').replace(/^#/, ''), 10))
+                    .filter(Number.isFinite)
+            );
+            let savedSerial = 1;
+            while (usedSavedSerials.has(savedSerial)) savedSerial++;
+            tab.billNo = '#' + savedSerial;
+        }
+
         const oldPending = existIndex !== -1 ? (Number(savedBills[existIndex].pendingUdhari) || 0) : 0;
         const oldMobile = existIndex !== -1 ? savedBills[existIndex].custMobile : null;
         if (existIndex !== -1) adjustStockForBillItems(savedBills[existIndex].items, true);
@@ -5421,7 +5438,7 @@ button,input,select,textarea{touch-action:manipulation;}
         // number remains locked in its tab until this point.
         const savedBillNumber = parseInt(String(record.billNo || '').replace(/^#/, ''), 10);
         if (Number.isFinite(savedBillNumber)) {
-            nextBillSeq = Math.max(Number(nextBillSeq) || 101, savedBillNumber + 1);
+            nextBillSeq = Math.max(Number(nextBillSeq) || 1, savedBillNumber + 1);
         }
 
         if (oldMobile && oldMobile !== 'N/A') {

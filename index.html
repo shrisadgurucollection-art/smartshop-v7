@@ -3390,6 +3390,31 @@ button,input,select,textarea{touch-action:manipulation;}
 
     function focusMainNewBill() {
         setTimeout(() => {
+            // P00/Main must never receive the cursor while any Waiting Bill
+            // is still pending. A Waiting Bill may be completely empty;
+            // its existence alone keeps P00 locked.
+            const waitingPending =
+                (typeof smartshopActiveBillIsWaiting !== 'undefined' && smartshopActiveBillIsWaiting) ||
+                (Array.isArray(billTabs) && billTabs.length > 1);
+
+            if (waitingPending) {
+                const waitingChip = document.querySelector('#bill-header-waiting-tabs .bill-header-waiting-chip');
+                if (waitingChip) {
+                    waitingChip.focus();
+                    waitingChip.scrollIntoView({block:'nearest', inline:'nearest'});
+                    return;
+                }
+
+                // If the current Waiting Bill itself is open and there is no
+                // other chip, keep the keyboard cursor inside P08.
+                const firstItemInput = document.getElementById('row-name-0');
+                if (document.getElementById('modal-bill')?.classList.contains('active') && firstItemInput) {
+                    firstItemInput.focus();
+                    return;
+                }
+                return;
+            }
+
             const el = document.getElementById('main-new-bill');
             if (el && document.getElementById('modal-bill')?.classList.contains('active') !== true) {
                 focusKeyboardControl(el);

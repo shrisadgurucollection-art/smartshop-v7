@@ -6821,33 +6821,34 @@ button,input,select,textarea{touch-action:manipulation;}
 
     // Bill -> Item Master -> ESC/Back: return to the exact Bill Item Name row.
     function closeItemMasterModal() {
-        // Exact reverse path:
-        // Sell Bill -> Item Master -> Item History
-        // Item History -> SAME Item Master row -> SAME Bill row.
+        // Bill -> Item Master -> ESC: return to the exact originating Bill row.
         const modal = document.getElementById('modal-saved-items');
         const savedReturnTabId = modal?.dataset?.returnBillTabId || '';
         const savedReturnRowIndex = modal?.dataset?.returnBillRowIndex;
+
+        const returnRowIndex = savedReturnRowIndex !== undefined
+            ? Number(savedReturnRowIndex)
+            : (itemMasterOriginBillRowIndex !== null
+                ? itemMasterOriginBillRowIndex
+                : itemMasterBillRowIndex);
+
         const savedReturnTab = savedReturnTabId
             ? billTabs.find(t => String(t.id) === String(savedReturnTabId))
             : null;
 
-        const returnRowIndex = itemMasterOriginBillRowIndex !== null
-            ? itemMasterOriginBillRowIndex
-            : (savedReturnRowIndex !== undefined ? Number(savedReturnRowIndex) : itemMasterBillRowIndex);
-
-        // Prefer the exact bill that opened Item Master. This fixes the
-        // second/newer bill ESC path where activeTabId may no longer be
-        // reliable while P02 is open.
-        const returnTabId = savedReturnTab ? savedReturnTab.id : activeTabId;
-        const wasBillFlow = returnRowIndex !== null && !!returnTabId;
+        const wasBillFlow = returnRowIndex !== null && !!(savedReturnTab || activeTabId);
 
         if (wasBillFlow) {
             if (savedReturnTab) activeTabId = savedReturnTab.id;
-            if (modal) {
+
             if (modal) {
                 modal.classList.remove('active');
                 modalStack = modalStack.filter(existingId => existingId !== 'modal-saved-items');
                 refreshModalStack();
+                delete modal.dataset.returnBillTabId;
+                delete modal.dataset.returnBillRowIndex;
+                delete modal.dataset.returnToBill;
+                delete modal.dataset.route;
             }
 
             const trail = pageReturnStack.length ? pageReturnStack[pageReturnStack.length - 1] : null;
@@ -6855,12 +6856,6 @@ button,input,select,textarea{touch-action:manipulation;}
 
             itemMasterBillRowIndex = null;
             itemMasterOriginBillRowIndex = null;
-            if (modal) {
-                delete modal.dataset.returnBillTabId;
-                delete modal.dataset.returnBillRowIndex;
-                delete modal.dataset.returnToBill;
-                delete modal.dataset.route;
-            }
             if (typeof modalFocusReturn !== 'undefined') {
                 modalFocusReturn.delete('modal-saved-items');
             }

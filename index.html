@@ -5804,7 +5804,23 @@ button,input,select,textarea{touch-action:manipulation;}
         if (search) search.value = '';
         renderHistoryTable();
         showModal('modal-history');
+
+        // M12 -> P11: the Bill History list is the active keyboard page.
+        // Keep the yellow cursor on the first bill row instead of returning
+        // focus to the search box after a short delay. Enter on that row
+        // must open P12; the row must not lose focus.
         setTimeout(() => {
+            if (fromM12 && !fromDailyDepositP17) {
+                const firstBillRow = document.querySelector('#history-table-tbody tr[role="button"]');
+                if (firstBillRow) {
+                    document.querySelectorAll('#history-table-tbody tr[role="button"]').forEach(r => r.classList.remove('selected'));
+                    firstBillRow.classList.add('selected');
+                    firstBillRow.focus({preventScroll:true});
+                    firstBillRow.scrollIntoView({block:'nearest'});
+                    return;
+                }
+            }
+
             const searchInput = document.getElementById('history-search-input');
             if (searchInput) {
                 searchInput.focus({preventScroll:true});

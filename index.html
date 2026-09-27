@@ -1663,7 +1663,7 @@ button,input,select,textarea{touch-action:manipulation;}
                         <div class="modern-feature-left"><div class="modern-feature-icon" style="background:#2563eb;">📋</div><div><div class="modern-feature-title">बिल हिस्ट्री<span class="smartshop-main-icon-code" data-main-icon-code="M12">M12</span></div><div class="modern-feature-sub">सर्व बिलांची यादी पहा</div></div></div><span class="modern-feature-arrow">›</span>
                     </div>
                     <div id="main-stock" class="modern-feature-card menu-card" tabindex="0" role="button" onclick="openSavedItemsModal()">
-                        <div class="modern-feature-left"><div class="modern-feature-icon" style="background:#16a34a;">📦</div><div><div class="modern-feature-title">आयटम मास्टर<span class="smartshop-main-icon-code" data-main-icon-code="M13">M13</span></div><div class="modern-feature-sub">फक्त आयटम लिस्ट</div></div></div><span class="modern-feature-arrow">›</span>
+                        <div class="modern-feature-left"><div class="modern-feature-icon" style="background:#16a34a;">📦</div><div><div class="modern-feature-title">आयटम मास्टर<span class="smartshop-main-icon-code" data-main-icon-code="EM13" data-main-code="EM13">EM13</span></div><div class="modern-feature-sub">फक्त आयटम लिस्ट</div></div></div><span class="modern-feature-arrow">›</span>
                     </div>
                     <div id="main-create-item" class="modern-feature-card menu-card" tabindex="0" role="button" onclick="openCreateItemModal()" title="न्यू आयटम क्रिएट">
                         <div class="modern-feature-left"><div class="modern-feature-icon" style="background:#7c3aed;">➕</div><div><div class="modern-feature-title">न्यू आयटम क्रिएट<span class="smartshop-main-icon-code" data-main-icon-code="M14">M14</span></div><div class="modern-feature-sub">नवीन आयटम तयार करा</div></div></div><span class="modern-feature-arrow">›</span>
@@ -6924,7 +6924,9 @@ button,input,select,textarea{touch-action:manipulation;}
         const itemMasterModal = document.getElementById('modal-saved-items');
         const openedFromMain = !!(
             document.activeElement?.id === 'main-bill-list' ||
-            document.activeElement?.closest?.('#main-bill-list')
+            document.activeElement?.closest?.('#main-bill-list') ||
+            document.activeElement?.id === 'main-stock' ||
+            document.activeElement?.closest?.('#main-stock')
         );
         window.smartshopItemMasterRouteFromMain = openedFromMain;
         if (itemMasterModal) {
@@ -7974,7 +7976,10 @@ window.addEventListener('keydown', function(e) {
         document.querySelector('[data-main-code="EM13"]') ||
         document.querySelector('[data-page-code="EM13"]') ||
         document.querySelector('[data-code="EM13"]') ||
-        document.getElementById('EM13');
+        document.getElementById('EM13') ||
+        document.querySelector('[data-main-icon-code="EM13"]') ||
+        document.querySelector('[data-main-icon-code="M13"]') ||
+        document.getElementById('main-stock');
       if(em13){
         if(em13.tabIndex<0) em13.tabIndex=0;
         em13.focus({preventScroll:true});

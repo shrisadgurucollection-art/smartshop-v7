@@ -3641,9 +3641,19 @@ button,input,select,textarea{touch-action:manipulation;}
         } else return false;
 
         setTimeout(()=>{
-            const resolved=resolvePageReturnFocus(entry);
-            if(resolved) focusKeyboardControl(resolved);
-            else if(entry.focusEl && document.contains(entry.focusEl)) focusKeyboardControl(entry.focusEl);
+            // Daily Deposit (M18) -> P17 exact cursor restore.
+            // Returning from Total Sales / Online / Cash / Udhari work
+            // restores the same P17 report card that opened the child page.
+            if(entry.modalId==='modal-reports' &&
+               entry.data?.fromDailyDeposit==='1' &&
+               entry.data?.reportFocusId){
+                const reportFocus = document.getElementById(String(entry.data.reportFocusId));
+                if(reportFocus) focusKeyboardControl(reportFocus);
+            } else {
+                const resolved=resolvePageReturnFocus(entry);
+                if(resolved) focusKeyboardControl(resolved);
+                else if(entry.focusEl && document.contains(entry.focusEl)) focusKeyboardControl(entry.focusEl);
+            }
 
             // The restored page itself must remember where it came from.
             // Example: Bill -> Item History -> Bill; after returning to
@@ -7011,14 +7021,20 @@ button,input,select,textarea{touch-action:manipulation;}
         // If P17 was opened from Daily Deposit (M18), preserve that exact
         // parent route while moving temporarily into History.
         const fromDailyDeposit = reports?.dataset?.route === 'daily-deposit-main';
+        const reportFocusId = document.activeElement?.id || '';
         if (fromDailyDeposit) {
             reports.dataset.route = 'daily-deposit-main';
             reports.dataset.returnToDailyDeposit = '1';
+            reports.dataset.returnFocusId = reportFocusId;
         }
         rememberPageReturn(
             'modal-reports',
             document.activeElement,
-            {reportFilter:filter||null, fromDailyDeposit:fromDailyDeposit ? '1' : '0'},
+            {
+                reportFilter:filter||null,
+                fromDailyDeposit:fromDailyDeposit ? '1' : '0',
+                reportFocusId:fromDailyDeposit ? reportFocusId : ''
+            },
             'modal-history'
         );
         hideModal('modal-reports');

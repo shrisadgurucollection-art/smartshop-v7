@@ -7007,7 +7007,20 @@ button,input,select,textarea{touch-action:manipulation;}
 
     // Report summary card navigation: close Reports first, then open History in front.
     function openHistoryFromReport(filter) {
-        rememberPageReturn('modal-reports',document.activeElement,{reportFilter:filter||null},'modal-history');
+        const reports = document.getElementById('modal-reports');
+        // If P17 was opened from Daily Deposit (M18), preserve that exact
+        // parent route while moving temporarily into History.
+        const fromDailyDeposit = reports?.dataset?.route === 'daily-deposit-main';
+        if (fromDailyDeposit) {
+            reports.dataset.route = 'daily-deposit-main';
+            reports.dataset.returnToDailyDeposit = '1';
+        }
+        rememberPageReturn(
+            'modal-reports',
+            document.activeElement,
+            {reportFilter:filter||null, fromDailyDeposit:fromDailyDeposit ? '1' : '0'},
+            'modal-history'
+        );
         hideModal('modal-reports');
         setTimeout(function(){ openHistoryModal(filter); }, 0);
     }
@@ -8287,20 +8300,33 @@ window.addEventListener('keydown', function(e) {
     return true;
   }
 
+  function isDailyDepositP17(){
+    const modal=document.getElementById('modal-reports');
+    return !!(
+      modal?.classList.contains('active') &&
+      modal.dataset.route === 'daily-deposit-main'
+    );
+  }
+
+  function focusP17Start(){
+    return focusId('main-total-sales');
+  }
+
+  window.smartshopDailyDepositP17Start = focusP17Start;
+
+  // P17 exact keyboard map — applies ONLY to P17 opened from M18.
+  // Start: Total Sales
+  // Right: Online -> Cash
+  // Down: Cash -> WhatsApp
+  // Up: WhatsApp -> Udhari
+  // Left: Udhari -> Cash -> Online -> Total Sales
   window.addEventListener('keydown', function(e){
     if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) return;
-
-    const modal=document.getElementById('modal-reports');
-    if(!modal?.classList.contains('active')) return;
-    if(modal.dataset.route!=='daily-deposit-main') return;
+    if(!isDailyDepositP17()) return;
 
     const id=e.target?.id;
     let next=null;
 
-    // Exact requested P17 keyboard path:
-    // Total ->Right-> Online ->Right-> Cash ->Down-> WhatsApp
-    // WhatsApp ->Up-> Udhari
-    // Left from Udhari/Cash/Online returns through Cash -> Online -> Total.
     if(e.key==='ArrowRight'){
       if(id==='main-total-sales') next='main-online';
       else if(id==='main-online') next='main-cash';
@@ -8309,9 +8335,9 @@ window.addEventListener('keydown', function(e) {
     } else if(e.key==='ArrowUp'){
       if(id==='p17-whatsapp-report') next='main-udhari';
     } else if(e.key==='ArrowLeft'){
-      if(id==='main-cash') next='main-online';
+      if(id==='main-udhari') next='main-cash';
+      else if(id==='main-cash') next='main-online';
       else if(id==='main-online') next='main-total-sales';
-      else if(id==='main-udhari') next='main-cash';
     }
 
     if(next && focusId(next)){

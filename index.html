@@ -2295,7 +2295,8 @@ button,input,select,textarea{touch-action:manipulation;}
     };
 
     let billTabs = JSON.parse(localStorage.getItem('ss_active_tabs')) || []; 
-    let activeTabId = localStorage.getItem('ss_active_tab_id') || null; 
+    let activeTabId = localStorage.getItem('ss_active_tab_id') || null;
+    let smartshopActiveBillIsWaiting = false; 
     // Remember the last selected barcode design for future barcode print popups.
     let lastBarcodeDesign = localStorage.getItem('ss_barcode_design') || '1';
     let mediaRecorder = null;
@@ -3782,6 +3783,21 @@ button,input,select,textarea{touch-action:manipulation;}
     }
 
     function confirmAndCloseBill() {
+        // P08 Waiting Bill lock:
+        // If this is the current/new bill and another Waiting Bill exists,
+        // X/ESC must not leave P08. The Waiting Bill must first be opened
+        // and then Saved or Cancelled.
+        const otherWaitingBills = billTabs.filter(t => t.id !== activeTabId);
+        if (otherWaitingBills.length > 0 && !smartshopActiveBillIsWaiting) {
+            const firstWaiting = document.querySelector('#bill-header-waiting-tabs .bill-header-waiting-chip');
+            if (firstWaiting) {
+                firstWaiting.focus();
+                firstWaiting.scrollIntoView({block:'nearest', inline:'nearest'});
+            }
+            return;
+        }
+
+
         // P02 Item Master is a child of the Bill. Never show the Bill-close
         // confirmation while P02 is active; ESC must only close P02.
         const p02ItemMaster = document.getElementById('modal-saved-items');
@@ -3921,6 +3937,7 @@ button,input,select,textarea{touch-action:manipulation;}
     }
 
     function createNewBillTab(existingBillData = null) {
+        smartshopActiveBillIsWaiting = false;
         let newBill;
         if (existingBillData) {
             newBill = existingBillData;
@@ -3980,6 +3997,7 @@ button,input,select,textarea{touch-action:manipulation;}
                 chip.onclick = function(e) {
                     e.preventDefault();
                     e.stopPropagation();
+                    smartshopActiveBillIsWaiting = true;
                     switchBillTab(tab.id);
                 };
                 headerTabs.appendChild(chip);

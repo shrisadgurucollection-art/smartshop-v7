@@ -1929,11 +1929,16 @@ button,input,select,textarea{touch-action:manipulation;}
             </div>
             <div class="table-container history-table-container">
                 <table class="custom-table history-main-table">
-                    <thead><tr><th>बिल नं.</th><th>तारीख / वेळ</th><th>ग्राहक</th><th>Qty</th><th>एकूण</th><th>पेमेंट</th><th>Recording</th></tr></thead>
+                    <thead><tr><th>बिल नं.</th><th>तारीख / वेळ</th><th>ग्राहक</th><th>मोबाईल</th><th>एकूण रक्कम</th><th>पेमेंट</th></tr></thead>
                     <tbody id="history-table-tbody"></tbody>
                 </table>
             </div>
-            <div class="history-summary-bar"><span>एकूण बिले : <b id="history-total-bills">0</b></span><span>|</span><span>एकूण विक्री : <b id="history-total-sales">0</b></span></div>
+            <div class="history-gross-summary-grid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px;">
+                <div style="padding:14px 12px;border:1px solid #93c5fd;border-radius:14px;background:#eff6ff;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);"><div style="font-weight:800;color:#1d4ed8;">एकूण बिलांची संख्या</div><strong id="history-total-bills" style="display:block;font-size:25px;color:#1d4ed8;line-height:1.2;">0</strong><small style="color:#475569;">बिल</small></div>
+                <div style="padding:14px 12px;border:1px solid #86efac;border-radius:14px;background:#ecfdf5;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);"><div style="font-weight:800;color:#047857;">एकूण विक्री</div><strong id="history-total-sales" style="display:block;font-size:25px;color:#047857;line-height:1.2;">₹ 0</strong></div>
+                <div style="padding:14px 12px;border:1px solid #86efac;border-radius:14px;background:#f0fdf4;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);"><div style="font-weight:800;color:#15803d;">एकूण प्रॉफिट</div><strong id="history-total-profit" style="display:block;font-size:25px;color:#15803d;line-height:1.2;">₹ 0</strong><small style="color:#475569;">(कॉस्ट नुसार)</small></div>
+                <div style="padding:14px 12px;border:1px solid #c4b5fd;border-radius:14px;background:#f5f3ff;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);"><div style="font-weight:800;color:#6d28d9;">सरासरी प्रॉफिट %</div><strong id="history-total-profit-percent" style="display:block;font-size:25px;color:#6d28d9;line-height:1.2;">0.00%</strong><small style="color:#475569;">(कॉस्ट नुसार)</small></div>
+            </div>
         </div>
     </div>
 </div>
@@ -6096,19 +6101,10 @@ button,input,select,textarea{touch-action:manipulation;}
                     <td><b style="color:#0b4f8a;">${b.billNo}</b></td>
                     <td>${formatSmartShopBillDate(b.date)}</td>
                     <td>${b.custName}</td>
-                    <td>${b.items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)}</td>
+                    <td>${b.custMobile || 'N/A'}</td>
                     <td style="color:#16a34a; font-weight:900;">${Number(b.finalBill || 0).toFixed(0)}</td>
                     <td><span class="badge-mode ${modeBadgeClass}">${b.mode === 'CASH' ? 'Cash' : b.mode === 'ONLINE' ? 'Online' : 'Udhari'}</span></td>
-                    <td>${b.audioNote ? `<button type="button" class="history-audio-btn" title="Recording ऐका" aria-label="Recording ऐका">▶</button>` : `<span class="history-audio-missing">—</span>`}</td>
                 `;
-                const audioBtn = tr.querySelector('.history-audio-btn');
-                if (audioBtn) {
-                    audioBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        playAudioNote(b.audioNote);
-                    });
-                }
                 tr.addEventListener('click', () => {
                     // Remember and visibly select the exact Bill History row that opened Bill Detail.
                     tbody.querySelectorAll('tr').forEach(r => r.classList.remove('selected'));
@@ -6141,10 +6137,22 @@ button,input,select,textarea{touch-action:manipulation;}
 
         const totalBills = billsToDisplay.length;
         const totalSales = billsToDisplay.reduce((sum, bill) => sum + (Number(bill.finalBill) || 0), 0);
+        const totalCost = billsToDisplay.reduce((sum, bill) => {
+            return sum + (bill.items || []).reduce((itemSum, item) => {
+                const master = masterItems.find(m => String(m.id) === String(item.itemId));
+                return itemSum + ((Number(master?.cost) || 0) * (Number(item.qty) || 0));
+            }, 0);
+        }, 0);
+        const totalProfit = totalSales - totalCost;
+        const totalProfitPercent = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
         const totalBillsEl = document.getElementById('history-total-bills');
         const totalSalesEl = document.getElementById('history-total-sales');
+        const totalProfitEl = document.getElementById('history-total-profit');
+        const totalProfitPercentEl = document.getElementById('history-total-profit-percent');
         if (totalBillsEl) totalBillsEl.textContent = totalBills;
-        if (totalSalesEl) totalSalesEl.textContent = '' + totalSales.toFixed(0);
+        if (totalSalesEl) totalSalesEl.textContent = '₹ ' + totalSales.toFixed(0);
+        if (totalProfitEl) totalProfitEl.textContent = '₹ ' + totalProfit.toFixed(0);
+        if (totalProfitPercentEl) totalProfitPercentEl.textContent = totalProfitPercent.toFixed(2) + '%';
     }
 
     function resetHistoryDateFilter() {

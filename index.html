@@ -7663,14 +7663,21 @@ document.addEventListener('keydown', function(e) {
     e.stopImmediatePropagation();
     e.__smartshopEscHandled = true;
 
+    // Close ONLY P03 visually. Do not call hideModal()/refreshModalStack(),
+    // because those generic routines can restore/close the parent P02 route.
     p03.classList.remove('active');
-    p03.style.removeProperty('display');
+    p03.style.setProperty('display', 'none', 'important');
 
     if (Array.isArray(modalStack)) {
         modalStack = modalStack.filter(id => id !== 'modal-item-history');
     }
-    if (typeof refreshModalStack === 'function') {
-        refreshModalStack();
+
+    // Consume only P03's return trail, keeping P02 active and visible.
+    if (Array.isArray(pageReturnStack)) {
+        const trail = pageReturnStack[pageReturnStack.length - 1];
+        if (trail && trail.childModalId === 'modal-item-history') {
+            pageReturnStack.pop();
+        }
     }
 
     const p02 = document.getElementById('modal-saved-items');

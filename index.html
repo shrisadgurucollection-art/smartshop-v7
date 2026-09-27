@@ -7061,8 +7061,16 @@ button,input,select,textarea{touch-action:manipulation;}
             },
             'modal-history'
         );
-        hideModal('modal-reports');
-        setTimeout(function(){ openHistoryModal(filter); }, 0);
+
+        if (fromDailyDeposit) {
+            // Keep P17 open underneath History. Do NOT hide P17 here:
+            // this prevents the generic Main/M12 route from taking control.
+            showModal('modal-history');
+            setTimeout(function(){ openHistoryModal(filter); }, 0);
+        } else {
+            hideModal('modal-reports');
+            setTimeout(function(){ openHistoryModal(filter); }, 0);
+        }
     }
 
     function openReportsModal() {
@@ -8160,8 +8168,13 @@ window.addEventListener('keydown', function(e) {
       // Exact reference route: IM-01 -> Main only when Item Master originated
       // from Main. Bill-origin Item Master keeps its existing Bill-row handler.
       if(m.id==='modal-saved-items' &&
-         document.getElementById('modal-saved-items')?.dataset.route==='item-master-main' &&
-         document.getElementById('modal-saved-items')?.dataset.returnToMain==='1' &&
+         (
+           (
+             document.getElementById('modal-saved-items')?.dataset.route==='item-master-main' &&
+             document.getElementById('modal-saved-items')?.dataset.returnToMain==='1'
+           ) ||
+           window.smartshopItemMasterRouteFromMain === true
+         ) &&
          typeof window.smartshopItemHistoryEscP02ToMain==='function'){
         return !!window.smartshopItemHistoryEscP02ToMain();
       }

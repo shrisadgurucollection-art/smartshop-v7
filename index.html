@@ -4437,6 +4437,8 @@ button,input,select,textarea{touch-action:manipulation;}
         if (billItemMasterModal) {
             billItemMasterModal.dataset.route = 'bill-item-master';
             billItemMasterModal.dataset.returnToBill = '1';
+            billItemMasterModal.dataset.returnBillTabId = String(activeTabId);
+            billItemMasterModal.dataset.returnBillRowIndex = String(index);
         }
 
         // Bill flow: Enter on Item Name must open Item Master and put the
@@ -6822,13 +6824,26 @@ button,input,select,textarea{touch-action:manipulation;}
         // Exact reverse path:
         // Sell Bill -> Item Master -> Item History
         // Item History -> SAME Item Master row -> SAME Bill row.
+        const modal = document.getElementById('modal-saved-items');
+        const savedReturnTabId = modal?.dataset?.returnBillTabId || '';
+        const savedReturnRowIndex = modal?.dataset?.returnBillRowIndex;
+        const savedReturnTab = savedReturnTabId
+            ? billTabs.find(t => String(t.id) === String(savedReturnTabId))
+            : null;
+
         const returnRowIndex = itemMasterOriginBillRowIndex !== null
             ? itemMasterOriginBillRowIndex
-            : itemMasterBillRowIndex;
-        const wasBillFlow = returnRowIndex !== null && !!activeTabId;
+            : (savedReturnRowIndex !== undefined ? Number(savedReturnRowIndex) : itemMasterBillRowIndex);
+
+        // Prefer the exact bill that opened Item Master. This fixes the
+        // second/newer bill ESC path where activeTabId may no longer be
+        // reliable while P02 is open.
+        const returnTabId = savedReturnTab ? savedReturnTab.id : activeTabId;
+        const wasBillFlow = returnRowIndex !== null && !!returnTabId;
 
         if (wasBillFlow) {
-            const modal = document.getElementById('modal-saved-items');
+            if (savedReturnTab) activeTabId = savedReturnTab.id;
+            if (modal) {
             if (modal) {
                 modal.classList.remove('active');
                 modalStack = modalStack.filter(existingId => existingId !== 'modal-saved-items');
@@ -6840,6 +6855,12 @@ button,input,select,textarea{touch-action:manipulation;}
 
             itemMasterBillRowIndex = null;
             itemMasterOriginBillRowIndex = null;
+            if (modal) {
+                delete modal.dataset.returnBillTabId;
+                delete modal.dataset.returnBillRowIndex;
+                delete modal.dataset.returnToBill;
+                delete modal.dataset.route;
+            }
             if (typeof modalFocusReturn !== 'undefined') {
                 modalFocusReturn.delete('modal-saved-items');
             }

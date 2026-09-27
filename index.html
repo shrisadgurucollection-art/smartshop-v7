@@ -1343,7 +1343,7 @@ button,input,select,textarea{touch-action:manipulation;}
   display:flex!important;align-items:center!important;
 }
 #modal-today-gross-profit .history-main-header h3{
-  margin:0!important;font-size:28px!important;font-weight:800!important;
+  margin:0!important;font-size:22px!important;font-weight:800!important;
   color:#fff!important;display:flex!important;align-items:center!important;gap:12px!important;
 }
 #modal-today-gross-profit .smartshop-page-code-header-badge{
@@ -1361,6 +1361,12 @@ button,input,select,textarea{touch-action:manipulation;}
   grid-template-columns:minmax(0,1fr) 230px 230px 96px!important;
   gap:12px!important;align-items:end!important;
   margin:0 0 14px!important;width:100%!important;
+}
+#modal-today-gross-profit .history-search-box{
+  grid-column:1 / 2!important;
+}
+#modal-today-gross-profit .history-date-field{
+  grid-column:auto!important;
 }
 #modal-today-gross-profit .history-search-box{
   height:52px!important;width:100%!important;
@@ -5992,8 +5998,12 @@ button,input,select,textarea{touch-action:manipulation;}
         renderTodayGrossProfit();
         setTimeout(()=>{
             const row=document.querySelector('#gross-profit-table-tbody tr[role="button"]');
-            if(row){row.classList.add('selected');row.focus({preventScroll:true});}
-            else search?.focus({preventScroll:true});
+            if(row){
+              row.classList.add('selected');
+              window.smartshopGrossProfitSelectedBill = row.dataset.savedIdx || window.smartshopGrossProfitSelectedBill;
+              if(typeof focusKeyboardControl==='function') focusKeyboardControl(row);
+              else row.focus({preventScroll:true});
+            } else search?.focus({preventScroll:true});
         },50);
     }
 

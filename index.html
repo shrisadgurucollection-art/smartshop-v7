@@ -36,6 +36,56 @@
         .bill-tab-chip.active { background: #0b2545; color: white; border-color: #0b2545; }
         .bill-tab-chip .close-tab { background: #dc2626; color: white; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
         .bill-tab-plus-chip { min-width: 46px; justify-content: center; font-size: 22px !important; padding: 4px 12px !important; }
+        .bill-header-waiting-tabs {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 10px;
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+        }
+        .bill-header-waiting-tabs::-webkit-scrollbar { display:none; }
+        .bill-header-waiting-chip {
+            flex: 0 0 auto;
+            border: 1px solid #8fb3d9;
+            background: #fff;
+            color: #0b2545;
+            border-radius: 5px;
+            padding: 4px 9px;
+            font-size: 11px;
+            font-weight: 900;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .bill-header-waiting-chip:hover,
+        .bill-header-waiting-chip:focus {
+            background: #e0f2fe;
+            outline: 2px solid #f59e0b;
+            outline-offset: 1px;
+        }
+        .bill-header-new-chip {
+            flex: 0 0 auto;
+            width: 30px;
+            height: 28px;
+            border: 1px solid #8fb3d9;
+            background: #fff;
+            color: #0b2545;
+            border-radius: 5px;
+            font-size: 21px;
+            font-weight: 900;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .bill-header-new-chip:hover,
+        .bill-header-new-chip:focus {
+            background: #dcfce7;
+            outline: 2px solid #f59e0b;
+            outline-offset: 1px;
+        }
+
 
         .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
         .menu-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.03); transition: 0.2s; }
@@ -1728,6 +1778,7 @@ button,input,select,textarea{touch-action:manipulation;}
     <div class="modal-content">
         <div class="modal-header">
             <h3 id="bill-modal-title">नवीन बिल<span class="smartshop-page-code-header-badge" data-page-code="P08">P08</span></h3>
+            <div id="bill-header-waiting-tabs" class="bill-header-waiting-tabs" aria-label="Waiting Bills"></div>
             <button class="close-btn" onclick="confirmAndCloseBill()">✕</button>
         </div>
         
@@ -3910,36 +3961,76 @@ button,input,select,textarea{touch-action:manipulation;}
 
     function renderBillTabsBar() {
         const container = document.getElementById('active-bills-tabs');
-        container.innerHTML = '';
-        billTabs.forEach(tab => {
-            const chip = document.createElement('div');
-            chip.className = `bill-tab-chip ${tab.id === activeTabId ? 'active' : ''}`;
-            chip.setAttribute('tabindex', '0');
-            chip.setAttribute('role', 'button');
-            chip.setAttribute('aria-label', `बिल ${tab.billNo}`);
-            chip.onclick = () => switchBillTab(tab.id);
-            chip.innerHTML = `
-                <span onclick="switchBillTab('${tab.id}')">${tab.billNo} (${tab.custName || 'New'})</span>
-                <span class="close-tab" onclick="closeBillTab('${tab.id}', event)">✕</span>
-            `;
-            container.appendChild(chip);
-        });
+        if (container) container.innerHTML = '';
 
-        const plusChip = document.createElement('button');
-        plusChip.type = 'button';
-        plusChip.className = 'bill-tab-chip bill-tab-plus-chip';
-        plusChip.setAttribute('tabindex', '0');
-        plusChip.setAttribute('aria-label', 'नवीन बिल तयार करा');
-        plusChip.title = 'नवीन बिल तयार करा';
-        plusChip.textContent = '+';
-        plusChip.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            createNewBillTab();
-        };
-        container.appendChild(plusChip);
+        // P08 header: show only the other open bills as Waiting Bill tabs.
+        const headerTabs = document.getElementById('bill-header-waiting-tabs');
+        if (headerTabs) {
+            headerTabs.innerHTML = '';
+            const waitingTabs = billTabs.filter(tab => tab.id !== activeTabId);
 
-        prepareKeyboardTargets(container);
+            waitingTabs.forEach(tab => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'bill-header-waiting-chip';
+                chip.tabIndex = 0;
+                chip.textContent = `Waiting Bill ${String(tab.billNo || '').replace(/^#/, '')}`;
+                chip.title = `Waiting Bill ${tab.billNo}`;
+                chip.setAttribute('aria-label', `Waiting Bill ${tab.billNo}`);
+                chip.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    switchBillTab(tab.id);
+                };
+                headerTabs.appendChild(chip);
+            });
+
+            const plusChip = document.createElement('button');
+            plusChip.type = 'button';
+            plusChip.className = 'bill-header-new-chip';
+            plusChip.tabIndex = 0;
+            plusChip.textContent = '+';
+            plusChip.title = 'नवीन बिल तयार करा';
+            plusChip.setAttribute('aria-label', 'नवीन बिल तयार करा');
+            plusChip.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                createNewBillTab();
+            };
+            headerTabs.appendChild(plusChip);
+        }
+
+        // Keep the existing dashboard Waiting panel in sync as before.
+        if (container) {
+            billTabs.forEach(tab => {
+                const chip = document.createElement('div');
+                chip.className = `bill-tab-chip ${tab.id === activeTabId ? 'active' : ''}`;
+                chip.setAttribute('tabindex', '0');
+                chip.setAttribute('role', 'button');
+                chip.setAttribute('aria-label', `बिल ${tab.billNo}`);
+                chip.onclick = () => switchBillTab(tab.id);
+                chip.innerHTML = `
+                    <span onclick="switchBillTab('${tab.id}')">${tab.billNo} (${tab.custName || 'New'})</span>
+                    <span class="close-tab" onclick="closeBillTab('${tab.id}', event)">✕</span>
+                `;
+                container.appendChild(chip);
+            });
+
+            const plusChip = document.createElement('button');
+            plusChip.type = 'button';
+            plusChip.className = 'bill-tab-chip bill-tab-plus-chip';
+            plusChip.setAttribute('tabindex', '0');
+            plusChip.setAttribute('aria-label', 'नवीन बिल तयार करा');
+            plusChip.title = 'नवीन बिल तयार करा';
+            plusChip.textContent = '+';
+            plusChip.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                createNewBillTab();
+            };
+            container.appendChild(plusChip);
+            prepareKeyboardTargets(container);
+        }
     }
 
     function switchBillTab(tabId, openModalWindow = true) {

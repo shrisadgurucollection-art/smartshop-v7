@@ -3772,7 +3772,7 @@ button,input,select,textarea{touch-action:manipulation;}
         // If this is the current/new bill and another Waiting Bill exists,
         // X/ESC must not leave P08. The Waiting Bill must first be opened
         // and then Saved or Cancelled.
-        const otherWaitingBills = billTabs.filter(t => t.id !== activeTabId);
+        const otherWaitingBills = billTabs.filter(t => t.id !== activeTabId && isRealWaitingBill(t));
         if (otherWaitingBills.length > 0 && !smartshopActiveBillIsWaiting) {
             const firstWaiting = document.querySelector('#bill-header-waiting-tabs .bill-header-waiting-chip');
             if (firstWaiting) {
@@ -3829,6 +3829,25 @@ button,input,select,textarea{touch-action:manipulation;}
 
         const tabIndex = billTabs.findIndex(t => t.id === activeTabId);
         const tab = tabIndex >= 0 ? billTabs[tabIndex] : null;
+
+        // An empty/₹0 bill is never a Waiting Bill.
+        // Remove it silently on close so it cannot remain as a phantom Waiting tab.
+        if (tab && !isRealWaitingBill(tab)) {
+            if (tabIndex >= 0) billTabs.splice(tabIndex, 1);
+            activeTabId = billTabs.length ? billTabs[billTabs.length - 1].id : null;
+            smartshopActiveBillIsWaiting = false;
+            persistData();
+            renderBillTabsBar();
+
+            const remainingRealWaiting = billTabs.filter(t => isRealWaitingBill(t));
+            if (remainingRealWaiting.length > 0) {
+                switchBillTab(remainingRealWaiting[0].id);
+            } else {
+                hideModal('modal-bill');
+                setTimeout(() => focusMainNewBill(), 50);
+            }
+            return;
+        }
 
         // Bill numbers are assigned when a new bill is created and are never
         // rolled back when a bill is cancelled/closed.
@@ -3961,6 +3980,17 @@ button,input,select,textarea{touch-action:manipulation;}
         }, 300);
     }
 
+    function isRealWaitingBill(tab) {
+        if (!tab || !Array.isArray(tab.items)) return false;
+        return tab.items.some(item => {
+            if (!item) return false;
+            const name = String(item.name || '').trim();
+            const total = Number(item.total) || 0;
+            const mrp = Number(item.mrp) || 0;
+            return name.length > 0 || total > 0 || mrp > 0;
+        });
+    }
+
     function renderBillTabsBar() {
         const container = document.getElementById('active-bills-tabs');
         if (container) container.innerHTML = '';
@@ -3969,7 +3999,7 @@ button,input,select,textarea{touch-action:manipulation;}
         const headerTabs = document.getElementById('bill-header-waiting-tabs');
         if (headerTabs) {
             headerTabs.innerHTML = '';
-            const waitingTabs = billTabs.filter(tab => tab.id !== activeTabId);
+            const waitingTabs = billTabs.filter(tab => tab.id !== activeTabId && isRealWaitingBill(tab));
 
             waitingTabs.forEach(tab => {
                 const chip = document.createElement('button');
@@ -4078,13 +4108,15 @@ button,input,select,textarea{touch-action:manipulation;}
 
     function closeBillTab(tabId, e) {
         if(e) e.stopPropagation();
-        billTabs = billTabs.filter(t => t.id !== tabId);
+        billTabs = billTabs.filter(t => t.id !== tabId || isRealWaitingBill(t));
         if (activeTabId === tabId) {
             if (billTabs.length > 0) {
-                switchBillTab(billTabs[billTabs.length - 1].id);
+                const next = billTabs.find(t => isRealWaitingBill(t)) || billTabs[billTabs.length - 1];
+                switchBillTab(next.id);
             } else {
                 hideModal('modal-bill');
                 activeTabId = null;
+                smartshopActiveBillIsWaiting = false;
             }
         }
         renderBillTabsBar();

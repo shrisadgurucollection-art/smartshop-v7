@@ -6983,27 +6983,16 @@ button,input,select,textarea{touch-action:manipulation;}
 
     // ===== WAITING BILLS POPUP — ONLY REQUESTED FEATURE =====
     let waitingBillsPopupIndex = 0;
-    let waitingBillReturnActive = false;
-
-    function getWaitingBillTabs() {
-        return billTabs.filter(tab =>
-            tab.id !== activeTabId &&
-            Array.isArray(tab.items) &&
-            tab.items.some(item => item && item.name && (parseFloat(item.total) || 0) > 0)
-        );
-    }
 
     function renderWaitingBillsPopup() {
         const list = document.getElementById('waiting-bills-popup-list');
         const count = document.getElementById('waiting-bills-popup-count');
         if (!list || !count) return;
 
-        normalizeOpenBillNumbers();
-        const waitingTabs = getWaitingBillTabs();
-        count.textContent = `एकूण Waiting Bills : ${waitingTabs.length}`;
+        count.textContent = `एकूण Waiting Bills : ${billTabs.length}`;
         list.innerHTML = '';
 
-        if (waitingTabs.length === 0) {
+        if (billTabs.length === 0) {
             const empty = document.createElement('div');
             empty.className = 'waiting-bills-popup-empty';
             empty.textContent = 'सध्या कोणतेही Waiting Bill नाही';
@@ -7012,10 +7001,10 @@ button,input,select,textarea{touch-action:manipulation;}
             return;
         }
 
-        if (waitingBillsPopupIndex >= waitingTabs.length) waitingBillsPopupIndex = waitingTabs.length - 1;
+        if (waitingBillsPopupIndex >= billTabs.length) waitingBillsPopupIndex = billTabs.length - 1;
         if (waitingBillsPopupIndex < 0) waitingBillsPopupIndex = 0;
 
-        waitingTabs.forEach((tab, index) => {
+        billTabs.forEach((tab, index) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'waiting-bill-popup-item' + (index === waitingBillsPopupIndex ? ' selected' : '');
@@ -7050,47 +7039,22 @@ button,input,select,textarea{touch-action:manipulation;}
 
     function selectWaitingBillFromPopup(index) {
         waitingBillsPopupIndex = index;
-        const waitingTabs = getWaitingBillTabs();
-        if (index < 0 || index >= waitingTabs.length) return;
-        const tabId = waitingTabs[index].id;
-        waitingBillReturnActive = true;
+        if (index < 0 || index >= billTabs.length) return;
+        const tabId = billTabs[index].id;
         hideModal('modal-waiting-bills');
         switchBillTab(tabId);
     }
 
     function createNewBillFromWaitingPopup() {
-        // P09 "＋ New Bill" starts a fresh bill, not a Waiting Bill return route.
-        waitingBillReturnActive = false;
         hideModal('modal-waiting-bills');
-        setTimeout(() => {
-            createNewBillTab();
-        }, 0);
-    }
-
-    function closeWaitingBillsPopupGuarded() {
-        const waitingTabs = getWaitingBillTabs();
-        if (waitingTabs.length > 0) {
-            // Waiting Bills must be cleared by opening each bill and Save/Cancel.
-            // Do not allow the popup to be dismissed to the Main page.
-            renderWaitingBillsPopup();
-            updateWaitingBillsPopupSelection();
-            return;
-        }
-        hideModal('modal-waiting-bills');
-        // P09 has no remaining waiting bills: explicitly return focus to Main.
-        setTimeout(() => {
-            const popup = document.getElementById('modal-waiting-bills');
-            if (popup?.classList.contains('active')) return;
-            if (typeof focusMainNewBill === 'function') focusMainNewBill();
-        }, 80);
+        createNewBillTab();
     }
 
     function handleWaitingBillsPopupKeyboard(e) {
         const popup = document.getElementById('modal-waiting-bills');
         if (!popup || !popup.classList.contains('active')) return;
 
-        const waitingTabs = getWaitingBillTabs();
-        const totalOptions = waitingTabs.length + 1; // Waiting Bills + New Bill
+        const totalOptions = billTabs.length + 1; // Waiting Bills + New Bill
         if (!totalOptions) return;
 
         if (e.key === 'ArrowDown') {
@@ -7103,19 +7067,10 @@ button,input,select,textarea{touch-action:manipulation;}
             updateWaitingBillsPopupSelection();
         } else if (e.key === 'Enter') {
             e.preventDefault();
-            if (waitingBillsPopupIndex < waitingTabs.length) {
+            if (waitingBillsPopupIndex < billTabs.length) {
                 selectWaitingBillFromPopup(waitingBillsPopupIndex);
             } else {
                 createNewBillFromWaitingPopup();
-            }
-        } else if (e.key === 'Escape') {
-            // Do not allow ESC to leave P09 while any Waiting Bill is pending.
-            // The user must open the bill and Save or Cancel it first.
-            if (waitingTabs.length > 0) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                return;
             }
         }
     }
@@ -7938,22 +7893,7 @@ window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for
     const m=topModal();
     if(!m) return;
 
-    /*
-     * Waiting Bills is intentionally blocking when real waiting bills exist.
-     * ESC must not accidentally leave that popup.
-     */
-    if(m.id==='modal-waiting-bills'){
-      const tabs=typeof window.getWaitingBillTabs==='function'
-        ? window.getWaitingBillTabs() : (window.billTabs||[]);
-      if(tabs && tabs.length>0){
-        consume(e);
-        if(typeof window.renderWaitingBillsPopup==='function')
-          window.renderWaitingBillsPopup();
-        if(typeof window.updateWaitingBillsPopupSelection==='function')
-          window.updateWaitingBillsPopupSelection();
-        return;
-      }
-    }
+    
 
     const handled=CN.back();
     if(handled) consume(e);

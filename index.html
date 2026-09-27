@@ -1318,7 +1318,33 @@ button,input,select,textarea{touch-action:manipulation;}
   }
 })();
 </script>
-</head>
+<style id="p11-reference-design">
+/* P11 reference design: visual-only override; existing logic/routes remain unchanged. */
+#modal-history.p11-reference-page .modal-content,
+#modal-history .history-fullscreen-content{background:#fff;border-radius:14px;overflow:hidden;}
+#modal-history .history-main-header{background:#0b4f8a!important;color:#fff!important;min-height:76px;padding:14px 24px;display:flex;align-items:center;}
+#modal-history .history-main-header h3{font-size:30px!important;font-weight:800!important;color:#fff!important;margin:0;display:flex;align-items:center;gap:12px;}
+#modal-history .history-main-header .smartshop-page-code-header-badge{background:#1677e8!important;color:#fff!important;border:1px solid #8fc1ff!important;font-size:24px!important;border-radius:8px!important;padding:4px 14px!important;}
+#modal-history .history-fullscreen-body{background:#fff;padding:18px 22px 14px!important;}
+#modal-history .p11-reference-filter-panel{display:grid!important;grid-template-columns:minmax(0,1fr) 335px!important;gap:14px!important;align-items:center!important;margin-bottom:18px!important;}
+#modal-history .p11-reference-search{height:58px!important;border:2px solid #d7e0ea!important;border-radius:12px!important;background:#fff!important;}
+#modal-history .p11-reference-search input{font-size:21px!important;color:#17365d!important;}
+#modal-history .p11-reference-date{display:flex!important;align-items:center!important;gap:10px!important;}
+#modal-history .p11-reference-date label{font-size:20px!important;font-weight:700!important;color:#17365d!important;white-space:nowrap;}
+#modal-history .p11-reference-date input{height:54px!important;border:2px solid #d7e0ea!important;border-radius:10px!important;font-size:20px!important;font-weight:700!important;color:#17365d!important;text-align:center!important;}
+#modal-history .p11-reference-date-to,#modal-history .p11-reference-search-button{display:none!important;}
+#modal-history .history-table-container{border:1px solid #d5e0ec;border-radius:12px;overflow:hidden;background:#fff;max-height:560px;}
+#modal-history .history-main-table{width:100%;border-collapse:collapse!important;font-size:20px!important;}
+#modal-history .history-main-table thead th{background:#0b4f8a!important;color:#fff!important;font-size:22px!important;font-weight:800!important;padding:13px 12px!important;text-align:center!important;border-right:1px solid rgba(255,255,255,.3)!important;}
+#modal-history .history-main-table tbody td{font-size:20px!important;font-weight:500!important;color:#17365d!important;padding:10px 12px!important;text-align:center!important;border-bottom:1px solid #d9e2ec!important;}
+#modal-history .history-main-table tbody tr.selected{background:#fff7c7!important;outline:3px solid #f4c400!important;outline-offset:-2px!important;}
+#modal-history .history-main-table tbody tr.selected td:first-child b{color:#0b4f8a!important;}
+#modal-history .history-gross-summary-grid{grid-template-columns:repeat(4,1fr)!important;gap:12px!important;margin-top:16px!important;}
+#modal-history .history-gross-summary-grid>div{min-height:112px!important;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:12px!important;border-radius:14px!important;}
+#modal-history .history-gross-summary-grid strong{font-size:32px!important;font-weight:900!important;}
+#modal-history .history-gross-summary-grid small{font-size:16px!important;}
+@media(max-width:900px){#modal-history .p11-reference-filter-panel{grid-template-columns:1fr!important}.p11-reference-date-to{display:none!important}#modal-history .history-gross-summary-grid{grid-template-columns:repeat(2,1fr)!important}}
+</style></head>
 <body>
 
 <div id="app-lock-screen" class="lock-screen" style="display: none;">
@@ -1921,11 +1947,11 @@ button,input,select,textarea{touch-action:manipulation;}
             <h3>📋 बिल हिस्ट्री<span class="smartshop-page-code-header-badge" data-page-code="P11">P11</span></h3>
         </div>
         <div class="modal-body history-fullscreen-body">
-            <div class="history-search-panel">
-                <div class="history-search-box"><span class="history-search-icon">🔍</span><input type="text" id="history-search-input" placeholder="बिल नंबर / ग्राहक नाव / मोबाईल नंबर शोधा..." oninput="renderHistoryTable()" onkeydown="handleHistorySearchKey(event)"></div>
-                <div class="history-date-field"><label>दिनांक पासून</label><input type="text" id="history-date-from" class="smartshop-date-input" inputmode="numeric" maxlength="10" placeholder="DD-MM-YYYY" autocomplete="off" onfocus="smartDateFocus(this)" onkeydown="handleSmartShopDateKey(event,this)" onchange="renderHistoryTable()"></div>
-                <div class="history-date-field"><label>दिनांक पर्यंत</label><input type="text" id="history-date-to" class="smartshop-date-input" inputmode="numeric" maxlength="10" placeholder="DD-MM-YYYY" autocomplete="off" onfocus="smartDateFocus(this)" onkeydown="handleSmartShopDateKey(event,this)" onchange="renderHistoryTable()"></div>
-                <button class="history-search-button" type="button" tabindex="0" onclick="renderHistoryTable()" onkeydown="handleHistorySearchButtonKey(event)">🔍 शोधा</button>
+            <div class="history-search-panel p11-reference-filter-panel">
+                <div class="history-search-box p11-reference-search"><span class="history-search-icon">🔍</span><input type="text" id="history-search-input" placeholder="बिल नंबर / ग्राहक नाव / मोबाईल नंबर शोधा..." oninput="renderHistoryTable()" onkeydown="handleHistorySearchKey(event)"></div>
+                <div class="history-date-field p11-reference-date"><label>दिनांक पासून</label><input type="text" id="history-date-from" class="smartshop-date-input" inputmode="numeric" maxlength="10" placeholder="DD-MM-YYYY" autocomplete="off" onfocus="smartDateFocus(this)" onkeydown="handleSmartShopDateKey(event,this)" onchange="renderHistoryTable()"></div>
+                <div class="history-date-field p11-reference-date-to" aria-hidden="true"><label>दिनांक पर्यंत</label><input type="text" id="history-date-to" class="smartshop-date-input" inputmode="numeric" maxlength="10" placeholder="DD-MM-YYYY" autocomplete="off" onfocus="smartDateFocus(this)" onkeydown="handleSmartShopDateKey(event,this)" onchange="renderHistoryTable()"></div>
+                <button class="history-search-button p11-reference-search-button" type="button" tabindex="0" onclick="renderHistoryTable()" onkeydown="handleHistorySearchButtonKey(event)">🔍 शोधा</button>
             </div>
             <div class="table-container history-table-container">
                 <table class="custom-table history-main-table">
@@ -5959,6 +5985,7 @@ button,input,select,textarea{touch-action:manipulation;}
         if (search) search.value = '';
         renderHistoryTable();
         showModal('modal-history');
+      document.getElementById('modal-history')?.classList.add('p11-reference-page');
 
         // M12 -> P11: the Bill History list is the active keyboard page.
         // Keep the yellow cursor on the first bill row instead of returning

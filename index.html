@@ -3804,19 +3804,11 @@ button,input,select,textarea{touch-action:manipulation;}
     }
 
     function confirmAndCloseBill() {
-        // P08 Waiting Bill lock:
-        // If this is the current/new bill and another Waiting Bill exists,
-        // X/ESC must not leave P08. The Waiting Bill must first be opened
-        // and then Saved or Cancelled.
+        // If another bill is already open, ESC on the current bill means
+        // "go back to the previous open bill". Do not block the return on
+        // the Waiting Bill lock and do not require an extra confirmation.
         const otherWaitingBills = billTabs.filter(t => t.id !== activeTabId);
-        if (otherWaitingBills.length > 0 && !smartshopActiveBillIsWaiting) {
-            const firstWaiting = document.querySelector('#bill-header-waiting-tabs .bill-header-waiting-chip');
-            if (firstWaiting) {
-                firstWaiting.focus();
-                firstWaiting.scrollIntoView({block:'nearest', inline:'nearest'});
-            }
-            return;
-        }
+        const hasOtherOpenBills = otherWaitingBills.length > 0;
 
 
         // P02 Item Master is a child of the Bill. Never show the Bill-close
@@ -3831,7 +3823,7 @@ button,input,select,textarea{touch-action:manipulation;}
             return;
         }
 
-        if (!confirm("तुम्हाला खरोखर बिल विंडो बंद करायची आहे का? (Yes/No)")) return;
+        if (!hasOtherOpenBills && !confirm("तुम्हाला खरोखर बिल विंडो बंद करायची आहे का? (Yes/No)")) return;
 
         // Bill History / Item Master History -> Modify -> BN-05 -> ESC -> OK:
         // this is a cancellation of the edit, so return directly to the

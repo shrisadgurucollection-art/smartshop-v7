@@ -1804,7 +1804,7 @@ button,input,select,textarea{touch-action:manipulation;}
     <div class="modal-content waiting-bills-popup-content">
         <div class="modal-header">
             <h3>⏳ Waiting Bills<span class="smartshop-page-code-header-badge" data-page-code="P09">P09</span></h3>
-            <button class="close-btn" onclick="closeWaitingBillsPopupGuarded()">✕</button>
+            <button class="close-btn" onclick="hideModal('modal-waiting-bills')">✕</button>
         </div>
         <div class="modal-body">
             <div id="waiting-bills-popup-count" style="font-weight:800;color:#0b2545;font-size:14px;">एकूण Waiting Bills : 0</div>
@@ -3781,31 +3781,6 @@ button,input,select,textarea{touch-action:manipulation;}
         // Bill numbers are assigned when a new bill is created and are never
         // rolled back when a bill is cancelled/closed.
         if (tabIndex >= 0) billTabs.splice(tabIndex, 1);
-
-        // If this bill was opened from P09 Waiting Bills, always return to P09
-        // after Save/Cancel. Never jump to another bill or Main while other
-        // waiting bills still exist.
-        if (waitingBillReturnActive) {
-            waitingBillReturnActive = false;
-            activeTabId = null;
-            persistData();
-            renderBillTabsBar();
-
-            const remainingWaiting = billTabs.some(t =>
-                Array.isArray(t.items) &&
-                t.items.some(item => item && item.name && (parseFloat(item.total) || 0) > 0)
-            );
-
-            hideModal('modal-bill');
-            if (remainingWaiting) {
-                setTimeout(() => {
-                    openWaitingBillsPopup();
-                }, 50);
-            } else {
-                setTimeout(() => focusMainNewBill(), 50);
-            }
-            return;
-        }
 
         activeTabId = billTabs.length ? billTabs[billTabs.length - 1].id : null;
 

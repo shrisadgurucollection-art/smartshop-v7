@@ -1679,7 +1679,7 @@ button,input,select,textarea{touch-action:manipulation;}
                     <div id="main-calculator" class="modern-feature-card menu-card" tabindex="0" role="button" aria-label="कॅल्क्युलेटर" onclick="openCalculator()">
                         <div class="modern-feature-left"><div class="modern-feature-icon" style="background:#0891b2;">🧮</div><div><div class="modern-feature-title">कॅल्क्युलेटर<span class="smartshop-main-icon-code" data-main-icon-code="M17">M17</span></div><div class="modern-feature-sub">जलद गणना करा (F12)</div></div></div><span class="modern-feature-arrow">›</span>
                     </div>
-                    <div class="modern-feature-card" role="button" tabindex="0" onclick="openReportsModal()">
+                    <div id="main-daily-deposit" class="modern-feature-card" role="button" tabindex="0" onclick="openReportsModal()">
                         <div class="modern-feature-left"><div class="modern-feature-icon" style="background:#e11d48;">💰</div><div><div class="modern-feature-title">दैनिक जमा<span class="smartshop-main-icon-code" data-main-icon-code="M18">M18</span></div><div class="modern-feature-sub">दैनंदिन जमा नोंद व रिपोर्ट</div></div></div><span class="modern-feature-arrow">›</span>
                     </div>
                     <div class="modern-feature-card" role="button" tabindex="0" onclick="openHistoryModal()">
@@ -2137,7 +2137,7 @@ button,input,select,textarea{touch-action:manipulation;}
                 <div class="pay-row"><span>उधारी (Pending Balance):</span><strong id="rep-udhari" style="color:#dc2626;"> 0</strong></div>
                 <div class="pay-row"><span>एकूण दिलेली सूट:</span><strong id="rep-discount" style="color:#dc2626;"> 0</strong></div>
             </div>
-            <button class="btn btn-wa-blue" onclick="shareDailyReportWhatsApp()">📲 WhatsApp वर रिपोर्ट पाठवा</button>
+            <button id="p17-whatsapp-report" class="btn btn-wa-blue" tabindex="0" onclick="shareDailyReportWhatsApp()">📲 WhatsApp वर रिपोर्ट पाठवा</button>
         </div>
     </div>
 </div>
@@ -7013,8 +7013,25 @@ button,input,select,textarea{touch-action:manipulation;}
     }
 
     function openReportsModal() {
+        const fromDailyDeposit = !!(
+            document.activeElement?.id === 'main-daily-deposit' ||
+            document.activeElement?.closest?.('#main-daily-deposit')
+        );
+        const reports = document.getElementById('modal-reports');
+        if (reports) {
+            reports.dataset.route = fromDailyDeposit ? 'daily-deposit-main' : 'reports-generic';
+            reports.dataset.returnToDailyDeposit = fromDailyDeposit ? '1' : '0';
+        }
+
         updateDashboardAndReports();
         showModal('modal-reports');
+
+        if (fromDailyDeposit) {
+            setTimeout(() => {
+                const first = document.getElementById('main-total-sales');
+                if (first) focusKeyboardControl(first);
+            }, 60);
+        }
     }
 
     function applyBusinessProfile(){
@@ -8096,6 +8113,31 @@ window.addEventListener('keydown', function(e) {
         return !!window.smartshopItemHistoryEscP02ToMain();
       }
 
+      // Daily Deposit (M18) -> P17 exact return route.
+      if(m.id==='modal-reports' &&
+         get('modal-reports')?.dataset.route==='daily-deposit-main'){
+        const reports = get('modal-reports');
+        if(reports) {
+          reports.classList.remove('active');
+          reports.dataset.route='';
+          reports.dataset.returnToDailyDeposit='0';
+        }
+        if(Array.isArray(window.modalStack)){
+          window.modalStack = window.modalStack.filter(id=>id!=='modal-reports');
+        }
+        if(typeof window.refreshModalStack==='function') window.refreshModalStack();
+
+        const daily = get('main-daily-deposit');
+        if(daily){
+          setTimeout(()=>{
+            if(typeof window.focusKeyboardControl==='function') window.focusKeyboardControl(daily);
+            else daily.focus?.({preventScroll:true});
+            daily.classList.add('selected');
+          },40);
+        }
+        return true;
+      }
+
       // Bill-origin Item Master remains on its existing exact Bill-row route.
       if(m.id==='modal-item-history' &&
          typeof window.closeItemHistoryPopup==='function'){
@@ -8230,6 +8272,53 @@ window.addEventListener('keydown', function(e) {
   },true);
 
   window.smartShopGetNavigationState=()=>CN.snapshot();
+})();
+</script>
+
+<script id="smartshop-p17-daily-deposit-keyboard">
+(function(){
+  'use strict';
+
+  function focusId(id){
+    const el=document.getElementById(id);
+    if(!el) return false;
+    if(typeof window.focusKeyboardControl==='function') window.focusKeyboardControl(el);
+    else el.focus?.({preventScroll:true});
+    return true;
+  }
+
+  window.addEventListener('keydown', function(e){
+    if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) return;
+
+    const modal=document.getElementById('modal-reports');
+    if(!modal?.classList.contains('active')) return;
+    if(modal.dataset.route!=='daily-deposit-main') return;
+
+    const id=e.target?.id;
+    let next=null;
+
+    // Exact requested P17 keyboard path:
+    // Total ->Right-> Online ->Right-> Cash ->Down-> WhatsApp
+    // WhatsApp ->Up-> Udhari
+    // Left from Udhari/Cash/Online returns through Cash -> Online -> Total.
+    if(e.key==='ArrowRight'){
+      if(id==='main-total-sales') next='main-online';
+      else if(id==='main-online') next='main-cash';
+    } else if(e.key==='ArrowDown'){
+      if(id==='main-cash') next='p17-whatsapp-report';
+    } else if(e.key==='ArrowUp'){
+      if(id==='p17-whatsapp-report') next='main-udhari';
+    } else if(e.key==='ArrowLeft'){
+      if(id==='main-cash') next='main-online';
+      else if(id==='main-online') next='main-total-sales';
+      else if(id==='main-udhari') next='main-cash';
+    }
+
+    if(next && focusId(next)){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }, true);
 })();
 </script>
 

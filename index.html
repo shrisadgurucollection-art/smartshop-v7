@@ -7651,41 +7651,23 @@ window.smartShopSetPageTitle = function(id, title, code){
 <script id="smartshop-main-icon-code-map">
 window.SMARTSHOP_MAIN_ICON_CODES_V1={prefix:"M",note:"Temporary unique codes for Main Page navigation icons/cards. Existing P page codes are unchanged."};
 /* ===== P03 ESC DISPLAY FIX =====
-   Only P03 (Item History) is handled here. It closes visually and leaves
-   P02 (Item Master) underneath untouched. No other page/flow is changed.
+   ESC must perform exactly the same close action as the P03 X button.
+   Only P03 is handled here.
 */
-document.addEventListener('keydown', function(e) {
+window.addEventListener('keydown', function(e) {
     if (e.key !== 'Escape') return;
+
     const p03 = document.getElementById('modal-item-history');
     if (!p03 || !p03.classList.contains('active')) return;
 
     e.preventDefault();
+    e.stopPropagation();
     e.stopImmediatePropagation();
-    e.__smartshopEscHandled = true;
 
-    // Close ONLY P03 visually. Do not call hideModal()/refreshModalStack(),
-    // because those generic routines can restore/close the parent P02 route.
-    p03.classList.remove('active');
-    p03.style.setProperty('display', 'none', 'important');
-
-    if (Array.isArray(modalStack)) {
-        modalStack = modalStack.filter(id => id !== 'modal-item-history');
-    }
-
-    // Consume only P03's return trail, keeping P02 active and visible.
-    if (Array.isArray(pageReturnStack)) {
-        const trail = pageReturnStack[pageReturnStack.length - 1];
-        if (trail && trail.childModalId === 'modal-item-history') {
-            pageReturnStack.pop();
-        }
-    }
-
-    const p02 = document.getElementById('modal-saved-items');
-    if (p02 && p02.classList.contains('active')) {
-        const search = p02.querySelector('#master-item-search');
-        if (search) {
-            setTimeout(() => focusKeyboardControl(search), 30);
-        }
+    // Use the SAME close function used by the P03 X button.
+    // This guarantees the visible P03 screen is actually closed.
+    if (typeof closeItemHistoryPopup === 'function') {
+        closeItemHistoryPopup();
     }
 }, true);
 

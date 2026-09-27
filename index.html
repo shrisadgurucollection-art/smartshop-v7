@@ -3390,14 +3390,15 @@ button,input,select,textarea{touch-action:manipulation;}
 
     function focusMainNewBill() {
         setTimeout(() => {
-            // P00/Main must never receive the cursor while any Waiting Bill
-            // is still pending. A Waiting Bill may be completely empty;
-            // its existence alone keeps P00 locked.
-            const waitingPending =
-                (typeof smartshopActiveBillIsWaiting !== 'undefined' && smartshopActiveBillIsWaiting) ||
-                (Array.isArray(billTabs) && billTabs.length > 1);
+            // P00/Main is locked while ANY Waiting Bill still exists.
+            // Even one completely empty Waiting Bill keeps P00 locked.
+            const waitingBillExists =
+                Array.isArray(billTabs) && billTabs.length > 0;
 
-            if (waitingPending) {
+            const waitingPopupOpen =
+                document.getElementById('modal-waiting-bills')?.classList.contains('active') === true;
+
+            if (waitingBillExists || waitingPopupOpen) {
                 const waitingChip = document.querySelector('#bill-header-waiting-tabs .bill-header-waiting-chip');
                 if (waitingChip) {
                     waitingChip.focus();
@@ -3405,13 +3406,23 @@ button,input,select,textarea{touch-action:manipulation;}
                     return;
                 }
 
-                // If the current Waiting Bill itself is open and there is no
-                // other chip, keep the keyboard cursor inside P08.
+                const billModal = document.getElementById('modal-bill');
                 const firstItemInput = document.getElementById('row-name-0');
-                if (document.getElementById('modal-bill')?.classList.contains('active') && firstItemInput) {
+
+                // If a Waiting Bill is already open, keep focus inside P08.
+                if (billModal?.classList.contains('active') && firstItemInput) {
                     firstItemInput.focus();
                     return;
                 }
+
+                // If a Waiting Bill exists but is not currently open, open it
+                // instead of allowing focus to fall through to P00.
+                if (waitingBillExists && billTabs[0]?.id) {
+                    smartshopActiveBillIsWaiting = true;
+                    switchBillTab(billTabs[0].id, true);
+                    return;
+                }
+
                 return;
             }
 

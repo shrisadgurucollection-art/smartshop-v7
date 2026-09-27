@@ -5181,6 +5181,30 @@ button,input,select,textarea{touch-action:manipulation;}
         if (!paid || !cash || !online || !udhari || !printBox) return;
 
         const current = document.activeElement;
+        // Direct payment shortcuts: O = Online, C = Cash, U = Udhari.
+        // These work from anywhere inside the Payment & Save popup.
+        const popup = document.getElementById('modal-payment-popup');
+        if (popup?.classList.contains('active')) {
+            if (key === 'o' || key === 'O') {
+                e.preventDefault();
+                e.stopPropagation();
+                saveFinalBill('ONLINE');
+                return;
+            }
+            if (key === 'c' || key === 'C') {
+                e.preventDefault();
+                e.stopPropagation();
+                saveFinalBill('CASH');
+                return;
+            }
+            if (key === 'u' || key === 'U') {
+                e.preventDefault();
+                e.stopPropagation();
+                saveFinalBill('UDHARI');
+                return;
+            }
+        }
+
 
         const move = (el) => {
             if (!el) return;
@@ -5430,8 +5454,25 @@ button,input,select,textarea{touch-action:manipulation;}
                 }
             }
         } else {
-            closeBillTab(tab.id);
-            hideModal('modal-payment-popup');
+            // Normal Sale Bill save:
+            // 1) Save the current bill.
+            // 2) Remove it from the open Waiting tabs.
+            // 3) Immediately open the previous Waiting Bill, if one exists.
+            // 4) Only when no Waiting Bill remains, return to Main/P00.
+            const currentSavedTabId = tab.id;
+            const previousWaitingTab = billTabs.find(t => t.id !== currentSavedTabId);
+
+            billTabs = billTabs.filter(t => t.id !== currentSavedTabId);
+            activeTabId = previousWaitingTab ? previousWaitingTab.id : null;
+            smartshopActiveBillIsWaiting = !!previousWaitingTab;
+
+            const paymentModal = document.getElementById('modal-payment-popup');
+            const billModal = document.getElementById('modal-bill');
+            if (paymentModal) paymentModal.classList.remove('active');
+            if (billModal) billModal.classList.remove('active');
+            modalStack = modalStack.filter(id => id !== 'modal-payment-popup' && id !== 'modal-bill');
+            refreshModalStack();
+            renderBillTabsBar();
         }
 
         persistData();
@@ -5503,8 +5544,17 @@ button,input,select,textarea{touch-action:manipulation;}
             }
         }
 
-        // Do not automatically create another bill after Save.
-        // A new bill must be explicitly requested with F2.
+        // After normal save, continue directly to the previous Waiting Bill.
+        // Do not create a new bill automatically.
+        const nextWaitingTab = billTabs.find(t => t.id === activeTabId);
+        if (nextWaitingTab) {
+            smartshopActiveBillIsWaiting = true;
+            renderBillTabsBar();
+            persistData();
+            switchBillTab(nextWaitingTab.id, true);
+            return;
+        }
+
         smartshopActiveBillIsWaiting = false;
         activeTabId = null;
         renderBillTabsBar();
